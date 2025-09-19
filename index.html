@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2P/1P Listings Issues | Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root{--accent:#0d6efd;--green:#22c55e;--orange:#f97316}
+    body{background:#f6f8fb;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
+    .container-lg{max-width:1400px}
+    .card{border:0;border-radius:12px}
+    .stat-card{min-height:88px}
+    .small-muted{font-size:0.85rem;color:#6c757d}
+    .clickable{cursor:pointer}
+    .progress-sm{height:12px}
+    tr.active-row { background:#e7f1ff !important; }
+    #brandTable thead th {
+  background-color: #1a3958; /* deep blue */
+  color: white;
+  text-align: center;
+}
+ #DetailsbrandTable thead th {
+  background-color: #1a3958; /* deep blue */
+  color: white;
+
+}
+
+
+  </style>
+</head>
+<body>
+  <div id="loginOverlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#f6f8fb;display:flex;align-items:center;justify-content:center;z-index:3000;">
+  <div style="background:white;padding:30px;border-radius:12px;box-shadow:0 0 15px rgba(0,0,0,0.2);width:300px;text-align:center;">
+    <h3 class="mb-3">Login</h3>
+
+    <div class="mb-3">
+      <input type="text" id="loginUser" class="form-control" placeholder="Username">
+    </div>
+
+    <div class="mb-3 position-relative">
+      <input type="password" id="loginPass" class="form-control" placeholder="Password">
+      <i id="togglePass" class="bi bi-eye-fill position-absolute" style="top:50%;right:10px;transform:translateY(-50%);cursor:pointer;"></i>
+    </div>
+
+    <button class="btn btn-primary w-100 mb-2" onclick="login()">Login</button>
+
+    <div id="loginError" class="text-danger small mt-2"></div>
+  </div>
+</div>
+
+  <div id="loadingOverlay" style="display:none;position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(255,255,255,0.75);display:flex;align-items:center;justify-content:center;z-index:2000;backdrop-filter:blur(2px)">
+    <div class="text-center">
+      <div class="spinner-border text-primary" role="status"></div>
+      <div class="mt-2 small-muted">Loading sheet...</div>
+    </div>
+  </div>
+
+  <nav class="navbar navbar-light bg-white shadow-sm mb-4">
+  <div class="container-lg d-flex align-items-center">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+      <i class="bi bi-graph-up" style="font-size:1.2rem;color:var(--accent)"></i>
+      <div>
+        <div style="font-weight:700">2P/1P Brand Issues Dashboard</div>
+      </div>
+    </a>
+    <div class="ms-auto d-flex align-items-center gap-3">
+      <div class="small-muted">Auto-refresh every 2 minutes</div>
+      <button class="btn btn-sm btn-outline-danger" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</nav>
+
+  <main class="container-lg" id="dashboard" style="display:none;">
+    <!-- SUMMARY VIEW -->
+    <div id="summaryView">
+      <!-- Top summary cards -->
+      <div class="row g-3 mb-3">
+  <div class="col-6 col-md-2">
+    <div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row">
+      <div class="text-start me-2">
+        <div class="small-muted">Total items</div>
+        <div id="totalAsins" class="fw-bold fs-5">—</div>
+      </div>
+      <i class="bi bi-box-seam fs-3 text-primary"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row">
+      <div class="text-start me-2">
+        <div class="small-muted">Resolved</div>
+        <div id="totalResolved" class="fw-bold fs-5">—</div>
+      </div>
+      <i class="bi bi-check-circle fs-3 text-success"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row">
+      <div class="text-start me-2">
+        <div class="small-muted">Ongoing</div>
+        <div id="totalOngoing" class="fw-bold fs-5">—</div>
+      </div>
+      <i class="bi bi-hourglass-split fs-3 text-warning"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row">
+      <div class="text-start me-2">
+        <div class="small-muted">Assigned</div>
+        <div id="totalAssigned" class="fw-bold fs-5">—</div>
+      </div>
+      <i class="bi bi-person-check fs-3 text-info"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row">
+      <div class="text-start me-2">
+        <div class="small-muted">Not Yet Assigned</div>
+        <div id="totalNotAssigned" class="fw-bold fs-5">—</div>
+      </div>
+      <i class="bi bi-person-x fs-3 text-secondary"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row">
+      <div class="text-start me-2">
+        <div class="small-muted">% Fixed</div>
+        <div id="overallPct" class="fw-bold fs-5">—</div>
+      </div>
+      <i class="bi bi-percent fs-3 text-success"></i>
+    </div>
+  </div>
+</div>
+
+
+      
+
+<!-- Manager Insights -->
+      <!-- Manager Insights (2x2 Collapsible Grid) -->
+<div class="row g-3 mb-3">
+
+  <!-- Trends Over Time -->
+  <div class="col-md-6">
+    <div class="accordion" id="accordionTrends">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingTrends">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTrends" aria-expanded="false" aria-controls="collapseTrends">
+            📈 Trends Over Time
+          </button>
+        </h2>
+        <div id="collapseTrends" class="accordion-collapse collapse" aria-labelledby="headingTrends" data-bs-parent="#accordionTrends">
+          <div class="accordion-body">
+            <canvas id="trendsChart" height="150"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aging Issues -->
+  <div class="col-md-6">
+    <div class="accordion" id="accordionAging">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingAging">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAging" aria-expanded="false" aria-controls="collapseAging">
+            ⏳ Aging Issues (Avg Days)
+          </button>
+        </h2>
+        <div id="collapseAging" class="accordion-collapse collapse" aria-labelledby="headingAging" data-bs-parent="#accordionAging">
+          <div class="accordion-body">
+            <canvas id="agingChart" height="150"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Brand Workload Balance -->
+  <div class="col-md-6">
+    <div class="accordion" id="accordionWorkload">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingWorkload">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWorkload" aria-expanded="false" aria-controls="collapseWorkload">
+            ⚖️ Brand Workload Balance
+          </button>
+        </h2>
+        <div id="collapseWorkload" class="accordion-collapse collapse" aria-labelledby="headingWorkload" data-bs-parent="#accordionWorkload">
+          <div class="accordion-body">
+            <canvas id="workloadChart" height="150"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Blockers -->
+<div class="col-md-6">
+  <div class="accordion" id="accordionBlockers">
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingBlockers">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBlockers" aria-expanded="false" aria-controls="collapseBlockers">
+          🚧 Top Issues
+        </button>
+      </h2>
+      <div id="collapseBlockers" class="accordion-collapse collapse" aria-labelledby="headingBlockers" data-bs-parent="#accordionBlockers">
+        <div class="accordion-body p-2">
+          <ul id="topIssuesList" class="list-group list-group-flush small"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+
+
+
+
+      <!-- Brand summary + chart -->
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-lg-8">
+          <div class="card p-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="fw-bold">Per-brand status (click row for details)</div>
+              <div class="small-muted">Sorted by total items</div>
+            </div>
+            <div class="mb-2">
+              <input id="brandSearchBox" type="text" class="form-control form-control-sm" placeholder="Search brand..." style="width: 30%;">
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover mb-0" id="brandTable">
+                <thead>
+                  <tr>
+                    <th>Brand</th>
+                    <th class="text-end">Items</th>
+                    <th class="text-end">Resolved</th>
+                    <th class="text-end">Ongoing</th>
+                    <th class="text-end">Assigned</th>
+                    <th class="text-end">% Fixed</th>
+                    <th class="text-end">Progress</th>
+                  </tr>
+                </thead>
+                <tbody id="brandsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-lg-4">
+          <div class="card p-3 shadow-sm text-center">
+            <div class="fw-bold mb-2">Overall breakdown</div>
+            <canvas id="doughnutChart" height="200"></canvas>
+            <div class="card p-2 shadow-sm mt-3">
+              <div class="fw-bold mb-2">Top 10 Brands (Fixing %)</div>
+              <ul id="topBrandsList" class="list-group list-group-flush small"></ul>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+
+     </div> 
+    
+
+    <!-- BRAND DETAILS -->
+    <div id="brandDetails" style="display:none;height: 90vh;">
+      <div class="card p-3 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 id="brandDetailsTitle" class="mb-0 fw-bold"></h5>
+          <button class="btn btn-sm btn-outline-secondary" onclick="backToSummary()">← Back</button>
+        </div>
+        <div class="d-flex mb-2">
+          <select id="statusFilter" class="form-select form-select-sm me-2" style="width:auto">
+            <option value="All">All</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Ongoing">Ongoing</option>
+            <option value="Assigned">Assigned</option>
+            <option value="Not Yet Assigned">Not Yet Assigned</option>
+          </select>
+          <input id="searchBox" type="text" class="form-control form-control-sm" style="max-width:250px" placeholder="Search...">
+        </div>
+        <div class="table-responsive" style="max-height:520px;overflow:auto">
+          <table class="table table-sm table-hover mb-0" style="table-layout:fixed; width:100%" id="DetailsbrandTable">
+            <colgroup>
+              <col style="width:15%">
+              <col style="width:15%">
+              <col style="width:15%">
+              <col style="width:12%">
+              <col style="width:30%">
+              <col style="width:12%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>UPC</th><th>SKU</th><th>ASIN</th>
+                <th>Status</th><th>Issues</th><th>Date Fixed</th>
+              </tr>
+            </thead>
+            <tbody id="brandItemsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+<footer style="text-align: center;color: gray;font-family: 'Courier New', Courier, monospace;font-size: small;font-weight: bold;">&copy;2025 Listing Exclusive 2P - DPC</footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const SHEET_CSV_URL='https://docs.google.com/spreadsheets/d/1g9-aW1P5-1eFPiPY9HLAIDHKzzZAf1BdfZcwm3eGWow/export?format=csv&gid=0';
+    const resolvedKeywords=['resolved','fixed','done','closed','completed'];
+    const ongoingKeywords=['ongoing','open','in progress','pending','todo','inprogress'];
+
+    let itemsByBrand={},doughnutChart,trendChart,brandWorkloadChart,agingChart,ownerChart,currentBrand=null;
+ let blockersChart; 
+    function showLoading(){document.getElementById('loadingOverlay').style.display='flex';}
+    function hideLoading(){document.getElementById('loadingOverlay').style.display='none';}
+
+    async function loadSheet(){
+      try{
+        showLoading();
+        const res=await fetch(SHEET_CSV_URL);
+        const text=await res.text();
+        const parsed=Papa.parse(text,{header:true,skipEmptyLines:true});
+        const rows=parsed.data.map(r=>Object.fromEntries(Object.entries(r).map(([k,v])=>[k.trim(),String(v||'').trim()])));
+        processData(rows);
+      }catch(err){console.error(err);}
+      finally{hideLoading();}
+    }
+
+    function interpretStatus(r){
+      if(r['Date Fixed']) return 'Resolved';
+      const val=(r['STATUS']||'').toLowerCase();
+      if(resolvedKeywords.some(k=>val.includes(k))) return 'Resolved';
+      if(ongoingKeywords.some(k=>val.includes(k))) return 'Ongoing';
+      if(val.includes('assigned')) return 'Assigned';
+      if(!val) return 'Not Yet Assigned';
+      return 'Ongoing';
+    }
+
+    function processData(rows){
+      itemsByBrand={};
+      rows.forEach(r=>{
+        const brand=r['Brand']?.trim(); if(!brand) return;
+        const status=interpretStatus(r);
+        const item={
+          brand,upc:r['UPC']||'',sku:r['SKU']||'',asin:r['ASIN']||'',
+          status,issues:r['Notes']||'',date:r['Date']||'',dateFixed:r['Date Fixed']||'',
+          owner:r['Assigned To']||''
+        };
+        if(!itemsByBrand[brand]) itemsByBrand[brand]=[];
+        itemsByBrand[brand].push(item);
+      });
+      renderAll();
+    }
+
+    function renderAll(){
+      renderSummary();renderTable();renderDoughnut();renderTopBrands();
+      renderTrends();renderBrandWorkload();renderAging();renderTopBlockers();renderOwnerChart();
+      if(currentBrand) renderBrandDetails(currentBrand);
+    }
+
+    function renderSummary(){
+      let total=0,resolved=0,ongoing=0,assigned=0,notAssigned=0;
+      Object.values(itemsByBrand).forEach(arr=>{
+        total+=arr.length;
+        resolved+=arr.filter(i=>i.status==='Resolved').length;
+        ongoing+=arr.filter(i=>i.status==='Ongoing').length;
+        assigned+=arr.filter(i=>i.status==='Assigned').length;
+        notAssigned+=arr.filter(i=>i.status==='Not Yet Assigned').length;
+      });
+      document.getElementById('totalAsins').textContent=total;
+      document.getElementById('totalResolved').textContent=resolved;
+      document.getElementById('totalOngoing').textContent=ongoing;
+      document.getElementById('totalAssigned').textContent=assigned;
+      document.getElementById('totalNotAssigned').textContent=notAssigned;
+      document.getElementById('overallPct').textContent= total? (Math.round(resolved/total*10000)/100)+'%' : '0%';
+    }
+
+    document.getElementById('brandSearchBox').oninput=()=>renderTable();
+
+    function renderTable(){
+      const tbody=document.getElementById('brandsTableBody'); tbody.innerHTML='';
+      const search=document.getElementById('brandSearchBox').value.toLowerCase();
+      const rows=Object.entries(itemsByBrand).map(([brand,arr])=>{
+        const total=arr.length,resolved=arr.filter(i=>i.status==='Resolved').length;
+        const ongoing=arr.filter(i=>i.status==='Ongoing').length;
+        const assigned=arr.filter(i=>i.status==='Assigned').length;
+        return {brand,total,resolved,ongoing,assigned,pct:total?Math.round(resolved/total*10000)/100:0};
+      })
+      .filter(r=>!search||r.brand.toLowerCase().includes(search))
+      .sort((a,b)=>b.total-a.total);
+      rows.forEach(r=>{
+        const tr=document.createElement('tr'); tr.classList.add('clickable');
+        tr.innerHTML=`<td><b>${r.brand}</b></td>
+        <td class="text-end">${r.total}</td>
+        <td class="text-end">${r.resolved}</td>
+        <td class="text-end">${r.ongoing}</td>
+        <td class="text-end">${r.assigned}</td>
+        <td class="text-end">${r.pct}%</td>
+        <td class="text-end"><div class="progress progress-sm"><div class="progress-bar" style="width:${r.pct}%"></div></div></td>`;
+        tr.onclick=()=>{currentBrand=r.brand;showBrandDetails(r.brand);};
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderDoughnut(){
+      let resolved=0,ongoing=0,assigned=0,notAssigned=0;
+      Object.values(itemsByBrand).forEach(arr=>{
+        resolved+=arr.filter(i=>i.status==='Resolved').length;
+        ongoing+=arr.filter(i=>i.status==='Ongoing').length;
+        assigned+=arr.filter(i=>i.status==='Assigned').length;
+        notAssigned+=arr.filter(i=>i.status==='Not Yet Assigned').length;
+      });
+      if(doughnutChart) doughnutChart.destroy();
+      doughnutChart=new Chart(document.getElementById('doughnutChart'),{
+        type:'doughnut',
+        data:{labels:['Resolved','Ongoing','Assigned','Not Yet Assigned'],
+          datasets:[{data:[resolved,ongoing,assigned,notAssigned],
+            backgroundColor:['#42a5f5','#ff9800','#fdd835','#e0e0e0']}]},
+        options:{plugins:{legend:{position:'bottom'}}}
+      });
+    }
+
+    function renderTopBrands(){
+      const list=document.getElementById('topBrandsList'); list.innerHTML='';
+      let rows=Object.entries(itemsByBrand).map(([brand,arr])=>{
+        const total=arr.length,resolved=arr.filter(i=>i.status==='Resolved').length;
+        const pct=total?Math.round(resolved/total*10000)/100:0;
+        return {brand,total,resolved,pct};
+      }).filter(r=>r.total>0).sort((a,b)=>b.pct-a.pct||b.resolved-a.resolved).slice(0,10);
+      rows.forEach(r=>{
+        const li=document.createElement('li'); li.className='list-group-item d-flex justify-content-between';
+        li.innerHTML=`<span>${r.brand}</span><span class="fw-bold">${r.pct}%</span>`;
+        list.appendChild(li);
+      });
+    }
+
+    function renderTrends(){
+      const weekData={};
+      Object.values(itemsByBrand).flat().forEach(i=>{
+        const d=i.date||i.dateFixed; if(!d) return;
+        const week=new Date(d).toISOString().slice(0,10).substring(0,7); // YYYY-MM
+        if(!weekData[week]) weekData[week]={resolved:0,ongoing:0};
+        if(i.status==='Resolved') weekData[week].resolved++; else if(i.status==='Ongoing') weekData[week].ongoing++;
+      });
+      const labels=Object.keys(weekData).sort();
+      const resolved=labels.map(l=>weekData[l].resolved);
+      const ongoing=labels.map(l=>weekData[l].ongoing);
+      if(trendChart) trendChart.destroy();
+      trendChart=new Chart(document.getElementById('trendsChart'),{
+        type:'line',
+        data:{labels,datasets:[
+          {label:'Resolved',data:resolved,borderColor:'#42a5f5',fill:false},
+          {label:'Ongoing',data:ongoing,borderColor:'#ff9800',fill:false}
+        ]},
+        options:{responsive:true,plugins:{legend:{position:'bottom'}}}
+      });
+    }
+
+    function renderBrandWorkload(){
+      const labels=[],resolved=[],ongoing=[];
+      Object.entries(itemsByBrand).forEach(([brand,arr])=>{
+        labels.push(brand);
+        resolved.push(arr.filter(i=>i.status==='Resolved').length);
+        ongoing.push(arr.filter(i=>i.status==='Ongoing').length);
+      });
+      if(brandWorkloadChart) brandWorkloadChart.destroy();
+      brandWorkloadChart=new Chart(document.getElementById('workloadChart'),{
+        type:'bar',
+        data:{labels,datasets:[
+          {label:'Resolved',data:resolved,backgroundColor:'#42a5f5'},
+          {label:'Ongoing',data:ongoing,backgroundColor:'#ff9800'}
+        ]},
+        options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true},y:{stacked:true}}}
+      });
+    }
+
+    function renderAging(){
+      const brandAges={};
+      Object.entries(itemsByBrand).forEach(([brand,arr])=>{
+        const diffs=[];
+        arr.forEach(i=>{
+          if(i.date&&i.dateFixed){
+            const d1=new Date(i.date),d2=new Date(i.dateFixed);
+            const diff=Math.round((d2-d1)/(1000*60*60*24));
+            diffs.push(diff);
+          }
+        });
+        if(diffs.length) brandAges[brand]=Math.round(diffs.reduce((a,b)=>a+b,0)/diffs.length);
+      });
+      if(agingChart) agingChart.destroy();
+      agingChart=new Chart(document.getElementById('agingChart'),{
+        type:'bar',
+        data:{labels:Object.keys(brandAges),datasets:[{label:'Avg Days to Fix',data:Object.values(brandAges),backgroundColor:'#9c27b0'}]},
+        options:{plugins:{legend:{display:false}}}
+      });
+    }
+
+       
+function renderTopBlockers(){
+  const issues = {};
+  Object.values(itemsByBrand).flat().forEach(i => {
+    if(i.issues){
+      const key = i.issues;
+      if(!issues[key]) issues[key] = {};
+      if(!issues[key][i.brand]) issues[key][i.brand] = 0;
+      issues[key][i.brand]++;
+    }
+  });
+
+  const sortedIssues = Object.entries(issues)
+                             .map(([issue, brands]) => {
+                               const topBrand = Object.entries(brands)
+                                                      .sort((a,b)=>b[1]-a[1])[0];
+                               return {issue, brand: topBrand[0], count: topBrand[1]};
+                             })
+                             .sort((a,b) => b.count - a.count)
+                             .slice(0,10);
+
+  const list = document.getElementById('topIssuesList');
+  list.innerHTML = '';
+
+  sortedIssues.forEach(({issue, brand, count}) => {
+    const li = document.createElement('li');
+    li.className = 'list-group-item py-1 px-2';
+    li.style.fontSize = '0.78rem';
+    li.style.display = 'grid';
+    li.style.gridTemplateColumns = '2fr 1fr 1fr'; // Issue | Brand | Count
+    li.style.alignItems = 'center';
+    li.style.textAlign = 'left';
+    
+    // Create spans
+    const issueSpan = document.createElement('span');
+    issueSpan.textContent = issue;
+
+    const brandSpan = document.createElement('span');
+    brandSpan.textContent = brand;
+    brandSpan.style.textAlign = 'center';
+    brandSpan.style.fontWeight = 'bold';
+
+    const countSpan = document.createElement('span');
+    countSpan.textContent = `${count} ASIN${count>1?'s':''}`;
+    countSpan.style.textAlign = 'right';
+
+    li.appendChild(issueSpan);
+    li.appendChild(brandSpan);
+    li.appendChild(countSpan);
+
+    list.appendChild(li);
+  });
+}
+
+
+    function renderOwnerChart(){
+      const owners={},labels=[],data=[];
+      Object.values(itemsByBrand).flat().forEach(i=>{
+        if(i.owner){owners[i.owner]=(owners[i.owner]||0)+1;}
+      });
+      Object.entries(owners).forEach(([o,c])=>{labels.push(o);data.push(c);});
+      if(ownerChart) ownerChart.destroy();
+      ownerChart=new Chart(document.getElementById('ownerChart'),{
+        type:'bar',
+        data:{labels,datasets:[{label:'Items Assigned',data,backgroundColor:'#607d8b'}]},
+        options:{plugins:{legend:{display:false}}}
+      });
+    }
+
+    function showBrandDetails(brand){
+      document.getElementById('summaryView').style.display='none';
+      document.getElementById('brandDetails').style.display='block';
+      renderBrandDetails(brand);
+    }
+    function backToSummary(){
+      currentBrand=null;
+      document.getElementById('summaryView').style.display='block';
+      document.getElementById('brandDetails').style.display='none';
+    }
+
+    function renderBrandDetails(brand){
+      document.getElementById('brandDetailsTitle').textContent=brand;
+      const statusFilter=document.getElementById('statusFilter').value;
+      const search=document.getElementById('searchBox').value.toLowerCase();
+      const tbody=document.getElementById('brandItemsBody'); tbody.innerHTML='';
+      itemsByBrand[brand].forEach(i=>{
+        if(statusFilter!=='All'&&i.status!==statusFilter) return;
+        if(search&&![i.upc,i.sku,i.asin,i.issues].some(f=>f.toLowerCase().includes(search))) return;
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${i.upc}</td><td>${i.sku}</td><td>${i.asin}</td>
+        <td>${i.status}</td><td>${i.issues}</td><td>${i.dateFixed}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('statusFilter').onchange=()=>{if(currentBrand) renderBrandDetails(currentBrand);};
+    document.getElementById('searchBox').oninput=()=>{if(currentBrand) renderBrandDetails(currentBrand);};
+    
+    
+  document.querySelectorAll('.accordion-collapse').forEach(collapse => {
+    collapse.addEventListener('shown.bs.collapse', function () {
+      if (trendsChart) trendsChart.resize();
+      if (agingChart) agingChart.resize();
+      if (workloadChart) workloadChart.resize();
+      if (ownerChart) ownerChart.resize();
+    });
+  });
+
+    loadSheet(); setInterval(loadSheet,120000);
+   var _0x1a2b = ["YWRtaW4=", "YWRtaW4xMjMhQCM="];
+
+  function _0x3c4d(index) {
+    return atob(_0x1a2b[index]);
+  }
+
+  function login() {
+    var u = document.getElementById("loginUser").value;
+    var p = document.getElementById("loginPass").value;
+    if (u === _0x3c4d(0) && p === _0x3c4d(1)) {
+      localStorage.setItem("loggedIn", "true");
+      showDashboard();
+    } else {
+      document.getElementById("loginError").textContent = "Incorrect username or password";
+    }
+  }
+
+  function showDashboard() {
+    document.getElementById("loginOverlay").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+  }
+
+  
+  if (localStorage.getItem("loggedIn") === "true") {
+    showDashboard();
+  }
+
+  
+  function logout() {
+    localStorage.removeItem("loggedIn");
+    location.reload();
+  }
+  const togglePass = document.getElementById('togglePass');
+  const loginPass = document.getElementById('loginPass');
+  const loginUser = document.getElementById('loginUser');
+
+
+  togglePass.addEventListener('click', () => {
+    if (loginPass.type === 'password') {
+      loginPass.type = 'text';
+      togglePass.classList.replace('bi-eye-fill', 'bi-eye-slash-fill');
+    } else {
+      loginPass.type = 'password';
+      togglePass.classList.replace('bi-eye-slash-fill', 'bi-eye-fill');
+    }
+  });
+
+ 
+  [loginUser, loginPass].forEach(input => {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        login();
+      }
+    });
+  });
+  </script>
+</body>
+</html>
