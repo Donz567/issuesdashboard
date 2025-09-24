@@ -343,9 +343,25 @@
 
     function processData(rows){
   itemsByBrand={};
+
+  // 🚫 Define excluded brands (case-insensitive match for safety)
+  const excludedBrands = [
+    "PlanToys",
+    "Stick-O/Magformers",
+    "Stick-O",
+    "RevolutionRace (CA)",
+    "RevolutionRace",
+    "Booyah",
+    "Rollplay",
+    "Cybex / gb"
+  ].map(b => b.toLowerCase());
+
   rows.forEach(r=>{
     const brand=r['Brand']?.trim(); 
     if(!brand) return;
+
+    // 🚫 Skip excluded brands
+    if (excludedBrands.includes(brand.toLowerCase())) return;
 
     // ✅ Skip if Date is from 2023
     if (r['Date']) {
@@ -368,6 +384,7 @@
     if(!itemsByBrand[brand]) itemsByBrand[brand]=[];
     itemsByBrand[brand].push(item);
   });
+
   renderAll();
 }
 
