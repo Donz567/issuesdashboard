@@ -238,6 +238,7 @@
                     <th class="text-end">Resolved</th>
                     <th class="text-end">Ongoing</th>
                     <th class="text-end">Assigned</th>
+                    <th class="text-end">Not Yet Assigned</th>
                     <th class="text-end">% Fixed</th>
                     <th class="text-end">Progress</th>
                   </tr>
@@ -252,7 +253,7 @@
             <div class="fw-bold mb-2">Overall breakdown</div>
             <canvas id="doughnutChart" height="200"></canvas>
             <div class="card p-2 shadow-sm mt-3">
-              <div class="fw-bold mb-2">Top 10 Brands (Fixing %)</div>
+              <div class="fw-bold mb-2">Top 15 Brands (Fixing %)</div>
               <ul id="topBrandsList" class="list-group list-group-flush small"></ul>
             </div>
             
@@ -266,9 +267,10 @@
     <!-- BRAND DETAILS -->
     <div id="brandDetails" style="display:none;height: 90vh;">
       <div class="card p-3 shadow-sm">
-        <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex flex-column align-items-start mb-2">
+          <button class="btn btn-sm btn-outline-secondary mb-3" onclick="backToSummary()">← Back</button>
           <h5 id="brandDetailsTitle" class="mb-0 fw-bold"></h5>
-          <button class="btn btn-sm btn-outline-secondary" onclick="backToSummary()">← Back</button>
+          
         </div>
         <div class="d-flex mb-2">
           <select id="statusFilter" class="form-select form-select-sm me-2" style="width:auto">
@@ -280,8 +282,8 @@
           </select>
           <input id="searchBox" type="text" class="form-control form-control-sm" style="max-width:250px" placeholder="Search...">
         </div>
-        <div class="table-responsive" style="max-height:75vh;overflow:auto">
-          <table class="table table-sm table-hover mb-0" style="table-layout:fixed; width:100%" id="DetailsbrandTable">
+        <div class="table-responsive" style="max-height:75vh;overflow:auto;">
+          <table class="table table-sm table-hover mb-0" style="table-layout:fixed; width:100%;" id="DetailsbrandTable">
             <colgroup>
               <col style="width:15%">
               <col style="width:15%">
@@ -292,7 +294,7 @@
             </colgroup>
             <thead>
               <tr>
-                <th>UPC</th><th>SKU</th><th>ASIN</th>
+                <th>Date Added</th><th>SKU</th><th>ASIN</th>
                 <th>Status</th><th>Issues</th><th>Date Fixed</th>
               </tr>
             </thead>
@@ -313,7 +315,7 @@
     const ongoingKeywords=['ongoing','open','in progress','pending','todo','inprogress'];
 
     let itemsByBrand={},doughnutChart,trendChart,brandWorkloadChart,agingChart,ownerChart,currentBrand=null;
- let blockersChart; 
+ let blockersChart; // add global var
     function showLoading(){document.getElementById('loadingOverlay').style.display='flex';}
     function hideLoading(){document.getElementById('loadingOverlay').style.display='none';}
 
@@ -340,20 +342,34 @@
     }
 
     function processData(rows){
-      itemsByBrand={};
-      rows.forEach(r=>{
-        const brand=r['Brand']?.trim(); if(!brand) return;
-        const status=interpretStatus(r);
-        const item={
-          brand,upc:r['UPC']||'',sku:r['SKU']||'',asin:r['ASIN']||'',
-          status,issues:r['Notes']||'',date:r['Date']||'',dateFixed:r['Date Fixed']||'',
-          owner:r['Assigned To']||''
-        };
-        if(!itemsByBrand[brand]) itemsByBrand[brand]=[];
-        itemsByBrand[brand].push(item);
-      });
-      renderAll();
+  itemsByBrand={};
+  rows.forEach(r=>{
+    const brand=r['Brand']?.trim(); 
+    if(!brand) return;
+
+    // ✅ Skip if Date is from 2023
+    if (r['Date']) {
+      const year = new Date(r['Date']).getFullYear();
+      if (year === 2023) return; 
     }
+
+    const status=interpretStatus(r);
+    const item={
+      brand,
+      upc:r['UPC']||'',
+      sku:r['SKU']||'',
+      asin:r['ASIN']||'',
+      status,
+      issues:r['Notes']||'',
+      date:r['Date']||'',
+      dateFixed:r['Date Fixed']||'',
+      owner:r['Assigned To']||''
+    };
+    if(!itemsByBrand[brand]) itemsByBrand[brand]=[];
+    itemsByBrand[brand].push(item);
+  });
+  renderAll();
+}
 
     function renderAll(){
       renderSummary();renderTable();renderDoughnut();renderTopBrands();
@@ -387,7 +403,8 @@
         const total=arr.length,resolved=arr.filter(i=>i.status==='Resolved').length;
         const ongoing=arr.filter(i=>i.status==='Ongoing').length;
         const assigned=arr.filter(i=>i.status==='Assigned').length;
-        return {brand,total,resolved,ongoing,assigned,pct:total?Math.round(resolved/total*10000)/100:0};
+        const noassigned=arr.filter(i=>i.status==='Not Yet Assigned').length;
+        return {brand,total,resolved,ongoing,assigned,noassigned,pct:total?Math.round(resolved/total*10000)/100:0};
       })
       .filter(r=>!search||r.brand.toLowerCase().includes(search))
       .sort((a,b)=>b.total-a.total);
@@ -398,6 +415,7 @@
         <td class="text-end">${r.resolved}</td>
         <td class="text-end">${r.ongoing}</td>
         <td class="text-end">${r.assigned}</td>
+        <td class="text-end">${r.noassigned}</td>
         <td class="text-end">${r.pct}%</td>
         <td class="text-end"><div class="progress progress-sm"><div class="progress-bar" style="width:${r.pct}%"></div></div></td>`;
         tr.onclick=()=>{currentBrand=r.brand;showBrandDetails(r.brand);};
@@ -429,7 +447,7 @@
         const total=arr.length,resolved=arr.filter(i=>i.status==='Resolved').length;
         const pct=total?Math.round(resolved/total*10000)/100:0;
         return {brand,total,resolved,pct};
-      }).filter(r=>r.total>0).sort((a,b)=>b.pct-a.pct||b.resolved-a.resolved).slice(0,10);
+      }).filter(r=>r.total>0).sort((a,b)=>b.pct-a.pct||b.resolved-a.resolved).slice(0,15);
       rows.forEach(r=>{
         const li=document.createElement('li'); li.className='list-group-item d-flex justify-content-between';
         li.innerHTML=`<span>${r.brand}</span><span class="fw-bold">${r.pct}%</span>`;
@@ -585,9 +603,9 @@ function renderTopBlockers(){
       const tbody=document.getElementById('brandItemsBody'); tbody.innerHTML='';
       itemsByBrand[brand].forEach(i=>{
         if(statusFilter!=='All'&&i.status!==statusFilter) return;
-        if(search&&![i.upc,i.sku,i.asin,i.issues].some(f=>f.toLowerCase().includes(search))) return;
+        if(search&&![i.date,i.sku,i.asin,i.issues].some(f=>f.toLowerCase().includes(search))) return;
         const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${i.upc}</td><td>${i.sku}</td><td>${i.asin}</td>
+        tr.innerHTML=`<td>${i.date}</td><td>${i.sku}</td><td>${i.asin}</td>
         <td>${i.status}</td><td>${i.issues}</td><td>${i.dateFixed}</td>`;
         tbody.appendChild(tr);
       });
@@ -596,7 +614,7 @@ function renderTopBlockers(){
     document.getElementById('statusFilter').onchange=()=>{if(currentBrand) renderBrandDetails(currentBrand);};
     document.getElementById('searchBox').oninput=()=>{if(currentBrand) renderBrandDetails(currentBrand);};
     
-    
+    // ✅ Fix accordion resize handler
   document.querySelectorAll('.accordion-collapse').forEach(collapse => {
     collapse.addEventListener('shown.bs.collapse', function () {
       if (trendsChart) trendsChart.resize();
@@ -629,12 +647,12 @@ function renderTopBlockers(){
     document.getElementById("dashboard").style.display = "block";
   }
 
-  
+  // Auto-login if already authenticated
   if (localStorage.getItem("loggedIn") === "true") {
     showDashboard();
   }
 
-  
+  // Optional: logout function
   function logout() {
     localStorage.removeItem("loggedIn");
     location.reload();
@@ -643,7 +661,7 @@ function renderTopBlockers(){
   const loginPass = document.getElementById('loginPass');
   const loginUser = document.getElementById('loginUser');
 
-
+  // Toggle password visibility
   togglePass.addEventListener('click', () => {
     if (loginPass.type === 'password') {
       loginPass.type = 'text';
@@ -654,7 +672,7 @@ function renderTopBlockers(){
     }
   });
 
- 
+  // Press Enter to login
   [loginUser, loginPass].forEach(input => {
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
