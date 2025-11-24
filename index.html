@@ -16,687 +16,833 @@
     .clickable{cursor:pointer}
     .progress-sm{height:12px}
     tr.active-row { background:#e7f1ff !important; }
-    #brandTable thead th {
-  background-color: #1a3958; /* deep blue */
-  color: white;
-  text-align: center;
-}
- #DetailsbrandTable thead th {
-  background-color: #1a3958; /* deep blue */
-  color: white;
+    
+    /* --- HEADER STYLES --- */
+    .dashboard-table thead th,
+    .details-table thead th {
+      background-color: #1a3958; /* deep blue */
+      color: white;
+      text-align: center;
+      vertical-align: middle;
+      white-space: nowrap; 
+      /* Sticky Header Logic */
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 2px -1px rgba(0,0,0,0.4);
+    }
+    
+    .details-table thead th {
+      cursor: pointer; 
+      user-select: none; 
+    }
 
-}
+    .details-table thead th:hover {
+      background-color: #2c5075; 
+    }
 
-
+    /* Sort Icon Styling */
+    .sort-icon {
+      margin-left: 5px;
+      font-size: 0.8rem;
+      opacity: 0.5;
+    }
+    .sort-icon.active {
+      opacity: 1;
+      color: #ffca2c; 
+    }
+    
+    /* View visibility helper */
+    .view-container { display: none; }
+    .view-container.active { display: block; animation: fadeIn 0.3s; }
+    
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
 </head>
 <body>
+
   <div id="loginOverlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#f6f8fb;display:flex;align-items:center;justify-content:center;z-index:3000;">
-  <div style="background:white;padding:30px;border-radius:12px;box-shadow:0 0 15px rgba(0,0,0,0.2);width:300px;text-align:center;">
-    <h3 class="mb-3">Login</h3>
-
-    <div class="mb-3">
-      <input type="text" id="loginUser" class="form-control" placeholder="Username">
+    <div style="background:white;padding:30px;border-radius:12px;box-shadow:0 0 15px rgba(0,0,0,0.2);width:300px;text-align:center;">
+      <h3 class="mb-3">Login</h3>
+      <div class="mb-3">
+        <input type="text" id="loginUser" class="form-control" placeholder="Username">
+      </div>
+      <div class="mb-3 position-relative">
+        <input type="password" id="loginPass" class="form-control" placeholder="Password">
+        <i id="togglePass" class="bi bi-eye-fill position-absolute" style="top:50%;right:10px;transform:translateY(-50%);cursor:pointer;"></i>
+      </div>
+      <button class="btn btn-primary w-100 mb-2" onclick="login()">Login</button>
+      <div id="loginError" class="text-danger small mt-2"></div>
     </div>
-
-    <div class="mb-3 position-relative">
-      <input type="password" id="loginPass" class="form-control" placeholder="Password">
-      <i id="togglePass" class="bi bi-eye-fill position-absolute" style="top:50%;right:10px;transform:translateY(-50%);cursor:pointer;"></i>
-    </div>
-
-    <button class="btn btn-primary w-100 mb-2" onclick="login()">Login</button>
-
-    <div id="loginError" class="text-danger small mt-2"></div>
   </div>
-</div>
 
   <div id="loadingOverlay" style="display:none;position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(255,255,255,0.75);display:flex;align-items:center;justify-content:center;z-index:2000;backdrop-filter:blur(2px)">
     <div class="text-center">
       <div class="spinner-border text-primary" role="status"></div>
-      <div class="mt-2 small-muted">Loading sheet...</div>
+      <div class="mt-2 small-muted">Loading sheets...</div>
     </div>
   </div>
 
   <nav class="navbar navbar-light bg-white shadow-sm mb-4">
-  <div class="container-lg d-flex align-items-center">
-    <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-      <i class="bi bi-graph-up" style="font-size:1.2rem;color:var(--accent)"></i>
-      <div>
-        <div style="font-weight:700">2P/1P Brand Issues Dashboard</div>
+    <div class="container-lg d-flex align-items-center">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <i class="bi bi-graph-up" style="font-size:1.2rem;color:var(--accent)"></i>
+        <div>
+          <div style="font-weight:700" id="navTitle">2P/1P Brand Issues Dashboard</div>
+        </div>
+      </a>
+
+      <div class="d-flex gap-2 ms-4">
+          <button id="btn_view_2p" class="btn btn-sm btn-primary" onclick="switchView('2p')">2P/1P View</button>
+          <button id="btn_view_oe" class="btn btn-sm btn-outline-primary" onclick="switchView('oe')">3P View</button>
       </div>
-    </a>
-    <div class="ms-auto d-flex align-items-center gap-3">
-      <div class="small-muted">Auto-refresh every 2 minutes</div>
-      <button class="btn btn-sm btn-outline-danger" onclick="logout()">Logout</button>
+
+      <div class="ms-auto d-flex align-items-center gap-3">
+        <div class="small-muted">Auto-refresh every 2 minutes</div>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()">Logout</button>
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
 
   <main class="container-lg" id="dashboard" style="display:none;">
-    <!-- SUMMARY VIEW -->
-    <div id="summaryView">
-      <!-- Top summary cards -->
-      <div class="row g-3 mb-3">
-  <div class="col-6 col-md-2">
-    <div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row">
-      <div class="text-start me-2">
-        <div class="small-muted">Total items</div>
-        <div id="totalAsins" class="fw-bold fs-5">—</div>
-      </div>
-      <i class="bi bi-box-seam fs-3 text-primary"></i>
-    </div>
-  </div>
-  <div class="col-6 col-md-2">
-    <div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row">
-      <div class="text-start me-2">
-        <div class="small-muted">Resolved</div>
-        <div id="totalResolved" class="fw-bold fs-5">—</div>
-      </div>
-      <i class="bi bi-check-circle fs-3 text-success"></i>
-    </div>
-  </div>
-  <div class="col-6 col-md-2">
-    <div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row">
-      <div class="text-start me-2">
-        <div class="small-muted">Ongoing</div>
-        <div id="totalOngoing" class="fw-bold fs-5">—</div>
-      </div>
-      <i class="bi bi-hourglass-split fs-3 text-warning"></i>
-    </div>
-  </div>
-  <div class="col-6 col-md-2">
-    <div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row">
-      <div class="text-start me-2">
-        <div class="small-muted">Assigned</div>
-        <div id="totalAssigned" class="fw-bold fs-5">—</div>
-      </div>
-      <i class="bi bi-person-check fs-3 text-info"></i>
-    </div>
-  </div>
-  <div class="col-6 col-md-2">
-    <div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row">
-      <div class="text-start me-2">
-        <div class="small-muted">Not Yet Assigned</div>
-        <div id="totalNotAssigned" class="fw-bold fs-5">—</div>
-      </div>
-      <i class="bi bi-person-x fs-3 text-secondary"></i>
-    </div>
-  </div>
-  <div class="col-6 col-md-2">
-    <div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row">
-      <div class="text-start me-2">
-        <div class="small-muted">% Fixed</div>
-        <div id="overallPct" class="fw-bold fs-5">—</div>
-      </div>
-      <i class="bi bi-percent fs-3 text-success"></i>
-    </div>
-  </div>
-</div>
 
-
-      
-
-<!-- Manager Insights -->
-      <!-- Manager Insights (2x2 Collapsible Grid) -->
-<div class="row g-3 mb-3">
-
-  <!-- Trends Over Time -->
-  <div class="col-md-6">
-    <div class="accordion" id="accordionTrends">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingTrends">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTrends" aria-expanded="false" aria-controls="collapseTrends">
-            📈 Trends Over Time
-          </button>
-        </h2>
-        <div id="collapseTrends" class="accordion-collapse collapse" aria-labelledby="headingTrends" data-bs-parent="#accordionTrends">
-          <div class="accordion-body">
-            <canvas id="trendsChart" height="150"></canvas>
-          </div>
+    <div id="view_2p" class="view-container active">
+      <div id="summaryView_2p">
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Total items</div><div id="totalAsins_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-box-seam fs-3 text-primary"></i></div></div>
+            <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Resolved</div><div id="totalResolved_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-check-circle fs-3 text-success"></i></div></div>
+            <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Ongoing</div><div id="totalOngoing_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-hourglass-split fs-3 text-warning"></i></div></div>
+            <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Assigned</div><div id="totalAssigned_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-person-check fs-3 text-info"></i></div></div>
+            <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Not Yet Assigned</div><div id="totalNotAssigned_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-person-x fs-3 text-secondary"></i></div></div>
+            <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">% Fixed</div><div id="overallPct_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-percent fs-3 text-success"></i></div></div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Aging Issues -->
-  <div class="col-md-6">
-    <div class="accordion" id="accordionAging">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingAging">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAging" aria-expanded="false" aria-controls="collapseAging">
-            ⏳ Aging Issues (Avg Days)
-          </button>
-        </h2>
-        <div id="collapseAging" class="accordion-collapse collapse" aria-labelledby="headingAging" data-bs-parent="#accordionAging">
-          <div class="accordion-body">
-            <canvas id="agingChart" height="150"></canvas>
-          </div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6"><div class="accordion" id="accordionTrends_2p"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTrends_2p">📈 Trends Over Time</button></h2><div id="collapseTrends_2p" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="trendsChart_2p" height="150"></canvas></div></div></div></div></div>
+          <div class="col-md-6"><div class="accordion" id="accordionAging_2p"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAging_2p">⏳ Aging Issues (Avg Days)</button></h2><div id="collapseAging_2p" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="agingChart_2p" height="150"></canvas></div></div></div></div></div>
+          <div class="col-md-6"><div class="accordion" id="accordionWorkload_2p"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWorkload_2p">⚖️ Brand Workload Balance</button></h2><div id="collapseWorkload_2p" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="workloadChart_2p" height="150"></canvas></div></div></div></div></div>
+          <div class="col-md-6"><div class="accordion" id="accordionBlockers_2p"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBlockers_2p">🚧 Top Issues</button></h2><div id="collapseBlockers_2p" class="accordion-collapse collapse"><div class="accordion-body p-2"><ul id="topIssuesList_2p" class="list-group list-group-flush small"></ul></div></div></div></div></div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Brand Workload Balance -->
-  <div class="col-md-6">
-    <div class="accordion" id="accordionWorkload">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingWorkload">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWorkload" aria-expanded="false" aria-controls="collapseWorkload">
-            ⚖️ Brand Workload Balance
-          </button>
-        </h2>
-        <div id="collapseWorkload" class="accordion-collapse collapse" aria-labelledby="headingWorkload" data-bs-parent="#accordionWorkload">
-          <div class="accordion-body">
-            <canvas id="workloadChart" height="150"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Top Blockers -->
-<div class="col-md-6">
-  <div class="accordion" id="accordionBlockers">
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="headingBlockers">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBlockers" aria-expanded="false" aria-controls="collapseBlockers">
-          🚧 Top Issues
-        </button>
-      </h2>
-      <div id="collapseBlockers" class="accordion-collapse collapse" aria-labelledby="headingBlockers" data-bs-parent="#accordionBlockers">
-        <div class="accordion-body p-2">
-          <ul id="topIssuesList" class="list-group list-group-flush small"></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-</div>
-
-
-
-
-      <!-- Brand summary + chart -->
-      <div class="row g-3 mb-3">
-        <div class="col-12 col-lg-8">
-          <div class="card p-3 shadow-sm">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <div class="fw-bold">Per-brand status (click row for details)</div>
-              <div class="small-muted">Sorted by total items</div>
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-lg-8">
+            <div class="card p-3 shadow-sm">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="fw-bold">Per-brand status (2P/1P)</div>
+                <div class="small-muted">Sorted by total items</div>
+              </div>
+              <div class="mb-2">
+                <input id="brandSearchBox_2p" type="text" class="form-control form-control-sm" placeholder="Search brand..." style="width: 30%;">
+              </div>
+              <div class="table-responsive" style="max-height: 60vh; overflow: auto;">
+                <table class="table table-hover mb-0 dashboard-table" id="brandTable_2p">
+                  <thead><tr><th>Brand</th><th class="text-end">Items</th><th class="text-end">Resolved</th><th class="text-end">Ongoing</th><th class="text-end">Assigned</th><th class="text-end">Not Yet Assigned</th><th class="text-end">% Fixed</th><th class="text-end">Progress</th></tr></thead>
+                  <tbody id="brandsTableBody_2p"></tbody>
+                </table>
+              </div>
             </div>
-            <div class="mb-2">
-              <input id="brandSearchBox" type="text" class="form-control form-control-sm" placeholder="Search brand..." style="width: 30%;">
-            </div>
-            <div class="table-responsive">
-              <table class="table table-hover mb-0" id="brandTable">
-                <thead>
-                  <tr>
-                    <th>Brand</th>
-                    <th class="text-end">Items</th>
-                    <th class="text-end">Resolved</th>
-                    <th class="text-end">Ongoing</th>
-                    <th class="text-end">Assigned</th>
-                    <th class="text-end">Not Yet Assigned</th>
-                    <th class="text-end">% Fixed</th>
-                    <th class="text-end">Progress</th>
-                  </tr>
-                </thead>
-                <tbody id="brandsTableBody"></tbody>
-              </table>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="card p-3 shadow-sm text-center">
+              <div class="fw-bold mb-2">Overall breakdown (2P/1P)</div>
+              <canvas id="doughnutChart_2p" height="200"></canvas>
+              <div class="card p-2 shadow-sm mt-3">
+                <div class="fw-bold mb-2">Top 15 Brands (Fixing %)</div>
+                <ul id="topBrandsList_2p" class="list-group list-group-flush small"></ul>
+              </div>
             </div>
           </div>
         </div>
-        <div class="col-12 col-lg-4">
-          <div class="card p-3 shadow-sm text-center">
-            <div class="fw-bold mb-2">Overall breakdown</div>
-            <canvas id="doughnutChart" height="200"></canvas>
-            <div class="card p-2 shadow-sm mt-3">
-              <div class="fw-bold mb-2">Top 15 Brands (Fixing %)</div>
-              <ul id="topBrandsList" class="list-group list-group-flush small"></ul>
+      </div> 
+
+      <div id="brandDetails_2p" style="display:none;height: 90vh;">
+        <div class="card p-3 shadow-sm">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="d-flex flex-column">
+              <button class="btn btn-sm btn-outline-secondary mb-3 w-auto" onclick="backToSummary_2p()">← Back</button>
+              <h5 id="brandDetailsTitle_2p" class="mb-0 fw-bold"></h5>
             </div>
-            
+            <div class="d-flex flex-column align-items-end">
+                <div class="text-muted small mb-1" id="pageInfo_2p"></div>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary" id="btnPrev_2p" onclick="changePage_2p(-1)">Previous</button>
+                    <button class="btn btn-outline-secondary" id="btnNext_2p" onclick="changePage_2p(1)">Next</button>
+                </div>
+            </div>
+          </div>
+
+          <div class="d-flex mb-2">
+            <select id="statusFilter_2p" class="form-select form-select-sm me-2" style="width:auto">
+              <option value="All">All Statuses</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Ongoing">Ongoing</option>
+              <option value="Assigned">Assigned</option>
+              <option value="Not Yet Assigned">Not Yet Assigned</option>
+            </select>
+            <input id="searchBox_2p" type="text" class="form-control form-control-sm" style="max-width:250px" placeholder="Search...">
+            <div class="ms-auto small-muted pt-1">Click headers to sort</div>
+          </div>
+          <div class="table-responsive" style="max-height:75vh;overflow:auto;">
+            <table class="table table-sm table-hover mb-0 details-table" style="table-layout:fixed; width:100%;" id="DetailsbrandTable_2p">
+              <colgroup><col style="width:15%"><col style="width:15%"><col style="width:15%"><col style="width:12%"><col style="width:30%"><col style="width:13%"></colgroup>
+              <thead>
+                <tr>
+                  <th onclick="toggleSort_2p('date')">Date Added <i id="sort_icon_date_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
+                  <th onclick="toggleSort_2p('sku')">SKU <i id="sort_icon_sku_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
+                  <th onclick="toggleSort_2p('asin')">ASIN <i id="sort_icon_asin_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
+                  <th onclick="toggleSort_2p('status')">Status <i id="sort_icon_status_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
+                  <th onclick="toggleSort_2p('issues')">Issues <i id="sort_icon_issues_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
+                  <th onclick="toggleSort_2p('dateFixed')">Date Fixed <i id="sort_icon_dateFixed_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
+                </tr>
+              </thead>
+              <tbody id="brandItemsBody_2p"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div> 
+
+
+    <div id="view_oe" class="view-container">
+      <div id="summaryView_oe">
+        <div class="row g-3 mb-3">
+             <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Total items</div><div id="totalAsins_oe" class="fw-bold fs-5">—</div></div><i class="bi bi-box-seam fs-3 text-primary"></i></div></div>
+             <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Resolved</div><div id="totalResolved_oe" class="fw-bold fs-5">—</div></div><i class="bi bi-check-circle fs-3 text-success"></i></div></div>
+             <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Ongoing</div><div id="totalOngoing_oe" class="fw-bold fs-5">—</div></div><i class="bi bi-hourglass-split fs-3 text-warning"></i></div></div>
+             <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Assigned</div><div id="totalAssigned_oe" class="fw-bold fs-5">—</div></div><i class="bi bi-person-check fs-3 text-info"></i></div></div>
+             <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Not Yet Assigned</div><div id="totalNotAssigned_oe" class="fw-bold fs-5">—</div></div><i class="bi bi-person-x fs-3 text-secondary"></i></div></div>
+             <div class="col-6 col-md-2"><div class="card px-2 py-3 stat-card shadow-sm d-flex align-items-center justify-content-center flex-row"><div class="text-center pe-3"><div class="small-muted d-flex align-items-center gap-1" style="font-size:0.75rem;">Unresolved <i class="bi bi-exclamation-diamond text-danger"></i></div><div id="totalUnresolved_oe" class="fw-bold fs-5 text-danger">—</div></div><div style="width: 1px; height: 35px; background-color: #dee2e6;"></div><div class="text-center ps-3"><div class="small-muted d-flex align-items-center gap-1" style="font-size:0.75rem;">% Fixed <i class="bi bi-percent text-success"></i></div><div id="overallPct_oe" class="fw-bold fs-5 text-success">—</div></div></div></div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-6"><div class="accordion" id="accordionTrends_oe"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTrends_oe">📈 Trends Over Time</button></h2><div id="collapseTrends_oe" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="trendsChart_oe" height="150"></canvas></div></div></div></div></div>
+            <div class="col-md-6"><div class="accordion" id="accordionAging_oe"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAging_oe">⏳ Aging Issues (Avg Days)</button></h2><div id="collapseAging_oe" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="agingChart_oe" height="150"></canvas></div></div></div></div></div>
+            <div class="col-md-6"><div class="accordion" id="accordionWorkload_oe"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWorkload_oe">⚖️ Brand Workload Balance</button></h2><div id="collapseWorkload_oe" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="workloadChart_oe" height="150"></canvas></div></div></div></div></div>
+            <div class="col-md-6"><div class="accordion" id="accordionBlockers_oe"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBlockers_oe">🚧 Top Issues</button></h2><div id="collapseBlockers_oe" class="accordion-collapse collapse"><div class="accordion-body p-2"><ul id="topIssuesList_oe" class="list-group list-group-flush small"></ul></div></div></div></div></div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-lg-8">
+            <div class="card p-3 shadow-sm">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="fw-bold">Per-brand status (3P)</div>
+                <div class="small-muted">Sorted by total items</div>
+              </div>
+              <div class="mb-2">
+                <input id="brandSearchBox_oe" type="text" class="form-control form-control-sm" placeholder="Search brand..." style="width: 30%;">
+              </div>
+              <div class="table-responsive" style="max-height: 60vh; overflow: auto;">
+                <table class="table table-hover mb-0 dashboard-table" id="brandTable_oe">
+                  <thead><tr><th>Brand</th><th class="text-end">Items</th><th class="text-end">Resolved</th><th class="text-end">Ongoing</th><th class="text-end">Assigned</th><th class="text-end">Unresolved</th><th class="text-end">Not Yet Assigned</th><th class="text-end">% Fixed</th><th class="text-end">Progress</th></tr></thead>
+                  <tbody id="brandsTableBody_oe"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="card p-3 shadow-sm text-center">
+              <div class="fw-bold mb-2">Overall breakdown (3P)</div>
+              <canvas id="doughnutChart_oe" height="200"></canvas>
+              <div class="card p-2 shadow-sm mt-3">
+                <div class="fw-bold mb-2">Top 15 Brands (Fixing %)</div>
+                <ul id="topBrandsList_oe" class="list-group list-group-flush small"></ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-     </div> 
-    
+      <div id="brandDetails_oe" style="display:none;height: 90vh;">
+        <div class="card p-3 shadow-sm">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="d-flex flex-column">
+              <button class="btn btn-sm btn-outline-secondary mb-3 w-auto" onclick="backToSummary_oe()">← Back</button>
+              <h5 id="brandDetailsTitle_oe" class="mb-0 fw-bold"></h5>
+            </div>
+            <div class="d-flex flex-column align-items-end">
+                <div class="text-muted small mb-1" id="pageInfo_oe"></div>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary" id="btnPrev_oe" onclick="changePage_oe(-1)">Previous</button>
+                    <button class="btn btn-outline-secondary" id="btnNext_oe" onclick="changePage_oe(1)">Next</button>
+                </div>
+            </div>
+          </div>
 
-    <!-- BRAND DETAILS -->
-    <div id="brandDetails" style="display:none;height: 90vh;">
-      <div class="card p-3 shadow-sm">
-        <div class="d-flex flex-column align-items-start mb-2">
-          <button class="btn btn-sm btn-outline-secondary mb-3" onclick="backToSummary()">← Back</button>
-          <h5 id="brandDetailsTitle" class="mb-0 fw-bold"></h5>
-          
-        </div>
-        <div class="d-flex mb-2">
-          <select id="statusFilter" class="form-select form-select-sm me-2" style="width:auto">
-            <option value="All">All</option>
-            <option value="Resolved">Resolved</option>
-            <option value="Ongoing">Ongoing</option>
-            <option value="Assigned">Assigned</option>
-            <option value="Not Yet Assigned">Not Yet Assigned</option>
-          </select>
-          <input id="searchBox" type="text" class="form-control form-control-sm" style="max-width:250px" placeholder="Search...">
-        </div>
-        <div class="table-responsive" style="max-height:75vh;overflow:auto;">
-          <table class="table table-sm table-hover mb-0" style="table-layout:fixed; width:100%;" id="DetailsbrandTable">
-            <colgroup>
-              <col style="width:15%">
-              <col style="width:15%">
-              <col style="width:15%">
-              <col style="width:12%">
-              <col style="width:30%">
-              <col style="width:12%">
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Date Added</th><th>SKU</th><th>ASIN</th>
-                <th>Status</th><th>Issues</th><th>Date Fixed</th>
-              </tr>
-            </thead>
-            <tbody id="brandItemsBody"></tbody>
-          </table>
+          <div class="d-flex mb-2">
+            <select id="statusFilter_oe" class="form-select form-select-sm me-2" style="width:auto">
+              <option value="All">All Statuses</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Ongoing">Ongoing</option>
+              <option value="Assigned">Assigned</option>
+              <option value="Not Yet Assigned">Not Yet Assigned</option>
+            </select>
+            <input id="searchBox_oe" type="text" class="form-control form-control-sm" style="max-width:250px" placeholder="Search...">
+            <div class="ms-auto small-muted pt-1">Click headers to sort</div>
+          </div>
+          <div class="table-responsive" style="max-height:75vh;overflow:auto;">
+            <table class="table table-sm table-hover mb-0 details-table" style="table-layout:fixed; width:100%;" id="DetailsbrandTable_oe">
+              <colgroup><col style="width:15%"><col style="width:15%"><col style="width:15%"><col style="width:12%"><col style="width:30%"><col style="width:13%"></colgroup>
+              <thead>
+                <tr>
+                  <th onclick="toggleSort_oe('date')">Date Added <i id="sort_icon_date_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
+                  <th onclick="toggleSort_oe('sku')">SKU <i id="sort_icon_sku_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
+                  <th onclick="toggleSort_oe('asin')">ASIN <i id="sort_icon_asin_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
+                  <th onclick="toggleSort_oe('status')">Status <i id="sort_icon_status_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
+                  <th onclick="toggleSort_oe('issues')">Issues <i id="sort_icon_issues_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
+                  <th onclick="toggleSort_oe('dateFixed')">Date Fixed <i id="sort_icon_dateFixed_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
+                </tr>
+              </thead>
+              <tbody id="brandItemsBody_oe"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
+
   </main>
-<footer style="text-align: center;color: gray;font-family: 'Courier New', Courier, monospace;font-size: small;font-weight: bold;">&copy;2025 Listing Exclusive 2P - DPC</footer>
+
+  <footer style="text-align: center;color: gray;font-family: 'Courier New', Courier, monospace;font-size: small;font-weight: bold;">&copy;2025 Listings Exclusive - DPC</footer>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    const SHEET_CSV_URL='https://docs.google.com/spreadsheets/d/1g9-aW1P5-1eFPiPY9HLAIDHKzzZAf1BdfZcwm3eGWow/export?format=csv&gid=0';
-    const resolvedKeywords=['resolved','fixed','done','closed','completed'];
-    const ongoingKeywords=['ongoing','open','in progress','pending','todo','inprogress'];
-
-    let itemsByBrand={},doughnutChart,trendChart,brandWorkloadChart,agingChart,ownerChart,currentBrand=null;
- let blockersChart; // add global var
     function showLoading(){document.getElementById('loadingOverlay').style.display='flex';}
     function hideLoading(){document.getElementById('loadingOverlay').style.display='none';}
 
-    async function loadSheet(){
+    // ==========================================
+    //            GLOBAL VIEW SWITCHER
+    // ==========================================
+    function switchView(viewName) {
+        document.getElementById('view_2p').classList.remove('active');
+        document.getElementById('view_oe').classList.remove('active');
+        document.getElementById(`view_${viewName}`).classList.add('active');
+
+        const btn2p = document.getElementById('btn_view_2p');
+        const btnOe = document.getElementById('btn_view_oe');
+        
+        if (viewName === '2p') {
+            btn2p.className = 'btn btn-sm btn-primary';
+            btnOe.className = 'btn btn-sm btn-outline-primary';
+            document.title = "2P/1P Brand Issues Dashboard";
+            document.getElementById('navTitle').textContent = "2P/1P Brand Issues Dashboard";
+        } else {
+            btn2p.className = 'btn btn-sm btn-outline-primary';
+            btnOe.className = 'btn btn-sm btn-primary';
+            document.title = "3P Brand Issues Dashboard";
+            document.getElementById('navTitle').textContent = "3P Brand Issues Dashboard";
+        }
+    }
+
+    // ==========================================
+    //            BRAND NORMALIZATION HELPER
+    // ==========================================
+    const BRAND_MAPPINGS = {
+        "carolina boots": "Carolina",
+        "carolina": "Carolina",
+        "carhartt footwear": "Carhartt",
+        "carhartt": "Carhartt",
+    };
+
+    function normalizeBrand(rawBrand) {
+        if (!rawBrand) return "";
+        let clean = rawBrand.trim();
+        
+        // 1. Remove common suffixes (Smart Cleaning)
+        clean = clean.replace(/\s+(?:footwear|boots|shoes|apparel|inc\.?|ltd\.?|co\.?|brand)$/i, "");
+
+        // 2. Auto Title Case 
+        clean = clean.replace(/\w\S*/g, (txt) => {
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        });
+
+        // 3. Check specific mappings
+        const lower = clean.toLowerCase();
+        if (BRAND_MAPPINGS[lower]) {
+            return BRAND_MAPPINGS[lower];
+        }
+        
+        return clean;
+    }
+
+    // ==========================================
+    //            LOGIC FOR 2P DASHBOARD
+    // ==========================================
+    const CSV_URL_2P='https://docs.google.com/spreadsheets/d/1g9-aW1P5-1eFPiPY9HLAIDHKzzZAf1BdfZcwm3eGWow/export?format=csv&gid=0';
+    const resolvedKw_2p=['resolved','fixed','done','closed','completed'];
+    const ongoingKw_2p=['ongoing','open','in progress','pending','todo','inprogress'];
+
+    let data_2p = {};
+    let currentBrand_2p = null;
+    let charts_2p = { trend:null, workload:null, aging:null, doughnut:null, owner:null };
+    let sort_2p = { col: null, dir: 1 };
+    let currentPage_2p = 1;
+    const ROWS_PER_PAGE = 100;
+
+    async function loadSheet_2p(){
       try{
-        showLoading();
-        const res=await fetch(SHEET_CSV_URL);
+        const res=await fetch(CSV_URL_2P);
         const text=await res.text();
         const parsed=Papa.parse(text,{header:true,skipEmptyLines:true});
         const rows=parsed.data.map(r=>Object.fromEntries(Object.entries(r).map(([k,v])=>[k.trim(),String(v||'').trim()])));
-        processData(rows);
-      }catch(err){console.error(err);}
-      finally{hideLoading();}
+        processData_2p(rows);
+      }catch(err){console.error('2P Load Error:', err);}
     }
 
-    function interpretStatus(r){
+    function status_2p(r){
       if(r['Date Fixed']) return 'Resolved';
       const val=(r['STATUS']||'').toLowerCase();
-      if(resolvedKeywords.some(k=>val.includes(k))) return 'Resolved';
-      if(ongoingKeywords.some(k=>val.includes(k))) return 'Ongoing';
+      if(resolvedKw_2p.some(k=>val.includes(k))) return 'Resolved';
+      if(ongoingKw_2p.some(k=>val.includes(k))) return 'Ongoing';
       if(val.includes('assigned')) return 'Assigned';
       if(!val) return 'Not Yet Assigned';
       return 'Ongoing';
     }
 
-    function processData(rows){
-  itemsByBrand={};
+    function processData_2p(rows){
+      data_2p={};
+      const excluded = ["PlanToys", "Stick-O/Magformers", "Stick-O", "RevolutionRace (CA)", "RevolutionRace", "Booyah", "Rollplay", "Cybex / gb"].map(b=>b.toLowerCase());
 
-  // 🚫 Define excluded brands (case-insensitive match for safety)
-  const excludedBrands = [
-    "PlanToys",
-    "Stick-O/Magformers",
-    "Stick-O",
-    "RevolutionRace (CA)",
-    "RevolutionRace",
-    "Booyah",
-    "Rollplay",
-    "Cybex / gb"
-  ].map(b => b.toLowerCase());
-
-  rows.forEach(r=>{
-    const brand=r['Brand']?.trim(); 
-    if(!brand) return;
-
-    // 🚫 Skip excluded brands
-    if (excludedBrands.includes(brand.toLowerCase())) return;
-
-    // ✅ Skip if Date is from 2023
-    if (r['Date']) {
-      const year = new Date(r['Date']).getFullYear();
-      if (year === 2023) return; 
-    }
-
-    const status=interpretStatus(r);
-    const item={
-      brand,
-      upc:r['UPC']||'',
-      sku:r['SKU']||'',
-      asin:r['ASIN']||'',
-      status,
-      issues:r['Notes']||'',
-      date:r['Date']||'',
-      dateFixed:r['Date Fixed']||'',
-      owner:r['Assigned To']||''
-    };
-    if(!itemsByBrand[brand]) itemsByBrand[brand]=[];
-    itemsByBrand[brand].push(item);
-  });
-
-  renderAll();
-}
-
-    function renderAll(){
-      renderSummary();renderTable();renderDoughnut();renderTopBrands();
-      renderTrends();renderBrandWorkload();renderAging();renderTopBlockers();renderOwnerChart();
-      if(currentBrand) renderBrandDetails(currentBrand);
-    }
-
-    function renderSummary(){
-      let total=0,resolved=0,ongoing=0,assigned=0,notAssigned=0;
-      Object.values(itemsByBrand).forEach(arr=>{
-        total+=arr.length;
-        resolved+=arr.filter(i=>i.status==='Resolved').length;
-        ongoing+=arr.filter(i=>i.status==='Ongoing').length;
-        assigned+=arr.filter(i=>i.status==='Assigned').length;
-        notAssigned+=arr.filter(i=>i.status==='Not Yet Assigned').length;
-      });
-      document.getElementById('totalAsins').textContent=total;
-      document.getElementById('totalResolved').textContent=resolved;
-      document.getElementById('totalOngoing').textContent=ongoing;
-      document.getElementById('totalAssigned').textContent=assigned;
-      document.getElementById('totalNotAssigned').textContent=notAssigned;
-      document.getElementById('overallPct').textContent= total? (Math.round(resolved/total*10000)/100)+'%' : '0%';
-    }
-
-    document.getElementById('brandSearchBox').oninput=()=>renderTable();
-
-    function renderTable(){
-      const tbody=document.getElementById('brandsTableBody'); tbody.innerHTML='';
-      const search=document.getElementById('brandSearchBox').value.toLowerCase();
-      const rows=Object.entries(itemsByBrand).map(([brand,arr])=>{
-        const total=arr.length,resolved=arr.filter(i=>i.status==='Resolved').length;
-        const ongoing=arr.filter(i=>i.status==='Ongoing').length;
-        const assigned=arr.filter(i=>i.status==='Assigned').length;
-        const noassigned=arr.filter(i=>i.status==='Not Yet Assigned').length;
-        return {brand,total,resolved,ongoing,assigned,noassigned,pct:total?Math.round(resolved/total*10000)/100:0};
-      })
-      .filter(r=>!search||r.brand.toLowerCase().includes(search))
-      .sort((a,b)=>b.total-a.total);
       rows.forEach(r=>{
-        const tr=document.createElement('tr'); tr.classList.add('clickable');
-        tr.innerHTML=`<td><b>${r.brand}</b></td>
-        <td class="text-end">${r.total}</td>
-        <td class="text-end">${r.resolved}</td>
-        <td class="text-end">${r.ongoing}</td>
-        <td class="text-end">${r.assigned}</td>
-        <td class="text-end">${r.noassigned}</td>
-        <td class="text-end">${r.pct}%</td>
-        <td class="text-end"><div class="progress progress-sm"><div class="progress-bar" style="width:${r.pct}%"></div></div></td>`;
-        tr.onclick=()=>{currentBrand=r.brand;showBrandDetails(r.brand);};
-        tbody.appendChild(tr);
+        let brand=r['Brand']?.trim(); 
+        if(!brand) return;
+        
+        brand = normalizeBrand(brand);
+
+        if (excluded.includes(brand.toLowerCase())) return;
+        if (r['Date'] && new Date(r['Date']).getFullYear() === 2023) return; 
+
+        const st=status_2p(r);
+        const item={ brand, upc:r['UPC']||'', sku:r['SKU']||'', asin:r['ASIN']||'', status:st, issues:r['Notes']||'', date:r['Date']||'', dateFixed:r['Date Fixed']||'', owner:r['Assigned To']||'' };
+        if(!data_2p[brand]) data_2p[brand]=[];
+        data_2p[brand].push(item);
       });
+      renderAll_2p();
     }
 
-    function renderDoughnut(){
-      let resolved=0,ongoing=0,assigned=0,notAssigned=0;
-      Object.values(itemsByBrand).forEach(arr=>{
-        resolved+=arr.filter(i=>i.status==='Resolved').length;
-        ongoing+=arr.filter(i=>i.status==='Ongoing').length;
-        assigned+=arr.filter(i=>i.status==='Assigned').length;
-        notAssigned+=arr.filter(i=>i.status==='Not Yet Assigned').length;
-      });
-      if(doughnutChart) doughnutChart.destroy();
-      doughnutChart=new Chart(document.getElementById('doughnutChart'),{
-        type:'doughnut',
-        data:{labels:['Resolved','Ongoing','Assigned','Not Yet Assigned'],
-          datasets:[{data:[resolved,ongoing,assigned,notAssigned],
-            backgroundColor:['#42a5f5','#ff9800','#fdd835','#e0e0e0']}]},
-        options:{plugins:{legend:{position:'bottom'}}}
-      });
+    function renderAll_2p(){
+      renderSummary_2p(); renderTable_2p(); renderCharts_2p(); renderBlockers_2p();
+      if(currentBrand_2p) renderDetails_2p(currentBrand_2p);
     }
 
-    function renderTopBrands(){
-      const list=document.getElementById('topBrandsList'); list.innerHTML='';
-      let rows=Object.entries(itemsByBrand).map(([brand,arr])=>{
-        const total=arr.length,resolved=arr.filter(i=>i.status==='Resolved').length;
-        const pct=total?Math.round(resolved/total*10000)/100:0;
-        return {brand,total,resolved,pct};
-      }).filter(r=>r.total>0).sort((a,b)=>b.pct-a.pct||b.resolved-a.resolved).slice(0,15);
-      rows.forEach(r=>{
-        const li=document.createElement('li'); li.className='list-group-item d-flex justify-content-between';
-        li.innerHTML=`<span>${r.brand}</span><span class="fw-bold">${r.pct}%</span>`;
-        list.appendChild(li);
+    function renderSummary_2p(){
+      let t=0,r=0,o=0,a=0,n=0;
+      Object.values(data_2p).forEach(arr=>{
+        t+=arr.length; r+=arr.filter(i=>i.status==='Resolved').length;
+        o+=arr.filter(i=>i.status==='Ongoing').length; a+=arr.filter(i=>i.status==='Assigned').length;
+        n+=arr.filter(i=>i.status==='Not Yet Assigned').length;
       });
+      document.getElementById('totalAsins_2p').textContent=t; document.getElementById('totalResolved_2p').textContent=r;
+      document.getElementById('totalOngoing_2p').textContent=o; document.getElementById('totalAssigned_2p').textContent=a;
+      document.getElementById('totalNotAssigned_2p').textContent=n;
+      document.getElementById('overallPct_2p').textContent= t? (Math.round(r/t*10000)/100)+'%' : '0%';
     }
 
-    function renderTrends(){
-      const weekData={};
-      Object.values(itemsByBrand).flat().forEach(i=>{
-        const d=i.date||i.dateFixed; if(!d) return;
-        const week=new Date(d).toISOString().slice(0,10).substring(0,7); // YYYY-MM
-        if(!weekData[week]) weekData[week]={resolved:0,ongoing:0};
-        if(i.status==='Resolved') weekData[week].resolved++; else if(i.status==='Ongoing') weekData[week].ongoing++;
-      });
-      const labels=Object.keys(weekData).sort();
-      const resolved=labels.map(l=>weekData[l].resolved);
-      const ongoing=labels.map(l=>weekData[l].ongoing);
-      if(trendChart) trendChart.destroy();
-      trendChart=new Chart(document.getElementById('trendsChart'),{
-        type:'line',
-        data:{labels,datasets:[
-          {label:'Resolved',data:resolved,borderColor:'#42a5f5',fill:false},
-          {label:'Ongoing',data:ongoing,borderColor:'#ff9800',fill:false}
-        ]},
-        options:{responsive:true,plugins:{legend:{position:'bottom'}}}
-      });
-    }
-
-    function renderBrandWorkload(){
-      const labels=[],resolved=[],ongoing=[];
-      Object.entries(itemsByBrand).forEach(([brand,arr])=>{
-        labels.push(brand);
-        resolved.push(arr.filter(i=>i.status==='Resolved').length);
-        ongoing.push(arr.filter(i=>i.status==='Ongoing').length);
-      });
-      if(brandWorkloadChart) brandWorkloadChart.destroy();
-      brandWorkloadChart=new Chart(document.getElementById('workloadChart'),{
-        type:'bar',
-        data:{labels,datasets:[
-          {label:'Resolved',data:resolved,backgroundColor:'#42a5f5'},
-          {label:'Ongoing',data:ongoing,backgroundColor:'#ff9800'}
-        ]},
-        options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true},y:{stacked:true}}}
-      });
-    }
-
-    function renderAging(){
-      const brandAges={};
-      Object.entries(itemsByBrand).forEach(([brand,arr])=>{
-        const diffs=[];
-        arr.forEach(i=>{
-          if(i.date&&i.dateFixed){
-            const d1=new Date(i.date),d2=new Date(i.dateFixed);
-            const diff=Math.round((d2-d1)/(1000*60*60*24));
-            diffs.push(diff);
-          }
+    function renderTable_2p(){
+        const tbody=document.getElementById('brandsTableBody_2p'); tbody.innerHTML='';
+        const search=document.getElementById('brandSearchBox_2p').value.toLowerCase();
+        const rows=Object.entries(data_2p).map(([brand,arr])=>{
+            const t=arr.length,r=arr.filter(i=>i.status==='Resolved').length;
+            return {brand,t,r,o:arr.filter(i=>i.status==='Ongoing').length,a:arr.filter(i=>i.status==='Assigned').length,n:arr.filter(i=>i.status==='Not Yet Assigned').length,pct:t?Math.round(r/t*10000)/100:0};
+        }).filter(r=>!search||r.brand.toLowerCase().includes(search)).sort((a,b)=>b.t-a.t);
+        rows.forEach(r=>{
+            const tr=document.createElement('tr'); tr.classList.add('clickable');
+            tr.innerHTML=`<td><b>${r.brand}</b></td><td class="text-end">${r.t}</td><td class="text-end">${r.r}</td><td class="text-end">${r.o}</td><td class="text-end">${r.a}</td><td class="text-end">${r.n}</td><td class="text-end">${r.pct}%</td><td class="text-end"><div class="progress progress-sm"><div class="progress-bar" style="width:${r.pct}%"></div></div></td>`;
+            tr.onclick=()=>{currentBrand_2p=r.brand; showDetailsView_2p(r.brand);};
+            tbody.appendChild(tr);
         });
-        if(diffs.length) brandAges[brand]=Math.round(diffs.reduce((a,b)=>a+b,0)/diffs.length);
+        const list=document.getElementById('topBrandsList_2p'); list.innerHTML='';
+        rows.sort((a,b)=>b.pct-a.pct||b.r-a.r).slice(0,15).forEach(r=>{
+            list.innerHTML+=`<li class="list-group-item d-flex justify-content-between"><span>${r.brand}</span><span class="fw-bold">${r.pct}%</span></li>`;
+        });
+    }
+
+    function renderCharts_2p(){
+        let counts={r:0,o:0,a:0,n:0};
+        Object.values(data_2p).flat().forEach(i=>{ if(i.status=='Resolved')counts.r++; else if(i.status=='Ongoing')counts.o++; else if(i.status=='Assigned')counts.a++; else counts.n++; });
+        if(charts_2p.doughnut) charts_2p.doughnut.destroy();
+        charts_2p.doughnut=new Chart(document.getElementById('doughnutChart_2p'),{type:'doughnut',data:{labels:['Resolved','Ongoing','Assigned','Not Yet'],datasets:[{data:[counts.r,counts.o,counts.a,counts.n],backgroundColor:['#42a5f5','#ff9800','#fdd835','#e0e0e0']}]},options:{plugins:{legend:{position:'bottom'}}}});
+
+        const weeks={};
+        Object.values(data_2p).flat().forEach(i=>{
+            const d=i.date||i.dateFixed; if(!d)return;
+            const w=new Date(d).toISOString().slice(0,7);
+            if(!weeks[w])weeks[w]={r:0,o:0};
+            if(i.status=='Resolved')weeks[w].r++; else if(i.status=='Ongoing')weeks[w].o++;
+        });
+        const lbls=Object.keys(weeks).sort();
+        if(charts_2p.trend) charts_2p.trend.destroy();
+        charts_2p.trend=new Chart(document.getElementById('trendsChart_2p'),{type:'line',data:{labels:lbls,datasets:[{label:'Resolved',data:lbls.map(l=>weeks[l].r),borderColor:'#42a5f5',fill:false},{label:'Ongoing',data:lbls.map(l=>weeks[l].o),borderColor:'#ff9800',fill:false}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
+
+        const brands=Object.keys(data_2p);
+        const resolvedData=brands.map(b=>data_2p[b].filter(i=>i.status=='Resolved').length);
+        const ongoingData=brands.map(b=>data_2p[b].filter(i=>i.status=='Ongoing').length);
+        if(charts_2p.workload) charts_2p.workload.destroy();
+        charts_2p.workload=new Chart(document.getElementById('workloadChart_2p'),{type:'bar',data:{labels:brands,datasets:[{label:'Resolved',data:resolvedData,backgroundColor:'#42a5f5'},{label:'Ongoing',data:ongoingData,backgroundColor:'#ff9800'}]},options:{scales:{x:{stacked:true},y:{stacked:true}}}});
+
+        const ages=brands.map(b=>{
+            const diffs=data_2p[b].filter(i=>i.date&&i.dateFixed).map(i=>(new Date(i.dateFixed)-new Date(i.date))/(1000*60*60*24));
+            return diffs.length ? Math.round(diffs.reduce((a,c)=>a+c,0)/diffs.length) : 0;
+        });
+        if(charts_2p.aging) charts_2p.aging.destroy();
+        charts_2p.aging=new Chart(document.getElementById('agingChart_2p'),{type:'bar',data:{labels:brands,datasets:[{label:'Avg Days',data:ages,backgroundColor:'#9c27b0'}]},options:{plugins:{legend:{display:false}}}});
+    }
+
+    function renderBlockers_2p(){
+       const issues={};
+       Object.values(data_2p).flat().forEach(i=>{ if(i.issues){ const k=i.issues; if(!issues[k])issues[k]={}; if(!issues[k][i.brand])issues[k][i.brand]=0; issues[k][i.brand]++; }});
+       const sorted=Object.entries(issues).map(([is,br])=>{ const top=Object.entries(br).sort((a,b)=>b[1]-a[1])[0]; return {is,b:top[0],c:top[1]}; }).sort((a,b)=>b.c-a.c).slice(0,10);
+       const l=document.getElementById('topIssuesList_2p'); l.innerHTML='';
+       sorted.forEach(x=>{ l.innerHTML+=`<li class="list-group-item d-grid" style="grid-template-columns:2fr 1fr 1fr;font-size:0.78rem;"><span>${x.is}</span><span class="text-center fw-bold">${x.b}</span><span class="text-end">${x.c} ASINs</span></li>`; });
+    }
+
+    function showDetailsView_2p(brand){
+        sort_2p = { col: 'date', dir: 1 }; 
+        currentPage_2p = 1;
+        document.getElementById('summaryView_2p').style.display='none';
+        document.getElementById('brandDetails_2p').style.display='block';
+        updateIcons_2p(); renderDetails_2p(brand);
+    }
+    function backToSummary_2p(){
+        currentBrand_2p=null;
+        document.getElementById('summaryView_2p').style.display='block';
+        document.getElementById('brandDetails_2p').style.display='none';
+    }
+
+    function toggleSort_2p(col) {
+        if(sort_2p.col===col) sort_2p.dir*=-1; else { sort_2p.col=col; sort_2p.dir=1; }
+        updateIcons_2p(); renderDetails_2p(currentBrand_2p);
+    }
+    function updateIcons_2p(){
+        ['date','sku','asin','status','issues','dateFixed'].forEach(k=>{
+            const i=document.getElementById(`sort_icon_${k}_2p`);
+            if(i){ i.className='bi bi-arrow-down-up sort-icon'; i.classList.remove('active'); }
+        });
+        if(sort_2p.col){
+            const i=document.getElementById(`sort_icon_${sort_2p.col}_2p`);
+            if(i){ i.classList.add('active'); i.className=sort_2p.dir===1?'bi bi-sort-down sort-icon active':'bi bi-sort-up sort-icon active'; }
+        }
+    }
+
+    function changePage_2p(delta) {
+        currentPage_2p += delta;
+        renderDetails_2p(currentBrand_2p);
+    }
+
+    function renderDetails_2p(brand){
+        document.getElementById('brandDetailsTitle_2p').textContent=brand;
+        const filter=document.getElementById('statusFilter_2p').value;
+        const search=document.getElementById('searchBox_2p').value.toLowerCase();
+        const tbody=document.getElementById('brandItemsBody_2p'); tbody.innerHTML='';
+        
+        let items=[...data_2p[brand]];
+
+        items = items.filter(i => {
+           if(filter!=='All' && i.status!==filter) return false;
+           if(search && ![i.date,i.sku,i.asin,i.issues].some(f=>f.toLowerCase().includes(search))) return false;
+           return true;
+        });
+
+        if(sort_2p.col){
+            items.sort((a,b)=>{
+                let vA=a[sort_2p.col]||'', vB=b[sort_2p.col]||'';
+                if(['date','dateFixed'].includes(sort_2p.col)){ vA=vA?new Date(vA).getTime():0; vB=vB?new Date(vB).getTime():0; return (vA-vB)*sort_2p.dir; }
+                return vA.localeCompare(vB)*sort_2p.dir;
+            });
+        }
+        
+        const totalItems = items.length;
+        const totalPages = Math.ceil(totalItems / ROWS_PER_PAGE) || 1;
+        
+        if (currentPage_2p < 1) currentPage_2p = 1;
+        if (currentPage_2p > totalPages) currentPage_2p = totalPages;
+
+        const start = (currentPage_2p - 1) * ROWS_PER_PAGE;
+        const end = start + ROWS_PER_PAGE;
+        const pageItems = items.slice(start, end);
+
+        document.getElementById('pageInfo_2p').textContent = `Page ${currentPage_2p} of ${totalPages} (${totalItems} items)`;
+        document.getElementById('btnPrev_2p').disabled = (currentPage_2p === 1);
+        document.getElementById('btnNext_2p').disabled = (currentPage_2p === totalPages);
+
+        pageItems.forEach(i=>{
+            tbody.innerHTML+=`<tr><td>${i.date}</td><td>${i.sku}</td><td>${i.asin}</td><td>${i.status}</td><td>${i.issues}</td><td>${i.dateFixed}</td></tr>`;
+        });
+    }
+
+    document.getElementById('brandSearchBox_2p').oninput=renderTable_2p;
+    document.getElementById('statusFilter_2p').onchange=()=>{currentPage_2p=1; renderDetails_2p(currentBrand_2p);};
+    document.getElementById('searchBox_2p').oninput=()=>{currentPage_2p=1; renderDetails_2p(currentBrand_2p);};
+
+
+    // ==========================================
+    //            LOGIC FOR OE DASHBOARD
+    // ==========================================
+    const SHEETS_OE = [
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vQhBZjrGk8Y-jdCFgOfg_qJ_NeMXW_n5F4Z__rfIPeWWVtyCOmcO-FjeNKFdoXVWQjoLCUQfpM9lL-p/pub?gid=0&single=true&output=csv",
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vQhBZjrGk8Y-jdCFgOfg_qJ_NeMXW_n5F4Z__rfIPeWWVtyCOmcO-FjeNKFdoXVWQjoLCUQfpM9lL-p/pub?gid=2014757479&single=true&output=csv"
+    ];
+    const STATUS_OE = {
+      r: ["Resolved - Fixed","Resolved - Removed","Resolved - No Action Needed","consider fixed"],
+      o: ["Ongoing","Ongoing - Requested Removal"],
+      a: ["Assigned","Added to Masterlist"],
+      u: ["Unresolved","Unresolved - Removed","Found in Bulk listing issue tracker"]
+    };
+
+    let data_oe = {};
+    let currentBrand_oe = null;
+    let charts_oe = { trend:null, workload:null, aging:null, doughnut:null, owner:null };
+    let sort_oe = { col: null, dir: 1 };
+    let currentPage_oe = 1;
+
+    async function loadSheet_oe(){
+      try {
+        let allRows = [];
+        for (const [i, url] of SHEETS_OE.entries()) {
+          const res = await fetch(url);
+          const text = await res.text();
+          const parsed = Papa.parse(text, {header:true, skipEmptyLines:true});
+          const rows = parsed.data.map(r => {
+            const obj = Object.fromEntries(Object.entries(r).map(([k,v]) => [k.trim(), String(v||'').trim()]));
+            obj['STATUS'] = (i === 0) ? (obj['P'] || obj['Status'] || '') : (obj['Q'] || obj['Status'] || '');
+            return obj;
+          });
+          allRows = allRows.concat(rows);
+        }
+        processData_oe(allRows);
+      } catch(err){console.error('OE Load Error:', err);}
+    }
+
+    function status_oe(r) {
+      const raw = (r['STATUS'] || '').toLowerCase();
+      if (STATUS_OE.r.some(s => raw.includes(s.toLowerCase()))) return "Resolved";
+      if (STATUS_OE.o.some(s => raw.includes(s.toLowerCase()))) return "Ongoing";
+      if (STATUS_OE.a.some(s => raw.includes(s.toLowerCase()))) return "Assigned";
+      if (STATUS_OE.u.some(s => raw.includes(s.toLowerCase()))) return "Unresolved";
+      if(!raw) return "Not Yet Assigned";
+      return "Ongoing";
+    }
+
+    function processData_oe(rows){
+      data_oe={};
+      const excluded = ["PlanToys", "Stick-O/Magformers", "Stick-O", "RevolutionRace (CA)", "RevolutionRace", "Booyah", "Rollplay", "Cybex / gb"].map(b=>b.toLowerCase());
+      rows.forEach(r=>{
+        let brand=r['Brand']?.trim(); 
+        if (!brand || brand.toLowerCase() === 'na' || brand === '-' || brand === '#REF!' ) return;
+        
+        // Normalize Brand Name immediately for OE too
+        brand = normalizeBrand(brand);
+
+        if (excluded.includes(brand.toLowerCase())) return;
+        if (r['Date'] && new Date(r['Date']).getFullYear() === 2023) return;
+
+        const st=status_oe(r);
+        const item={ brand, upc:r['UPC']||'', sku:r['SKU']||'', asin:r['ASIN']||'', status:st, issues:r['Notes']||'', date:r['Date']||'', dateFixed:r['Date Fixed']||'', owner:r['Assigned To']||'' };
+        if(!data_oe[brand]) data_oe[brand]=[];
+        data_oe[brand].push(item);
       });
-      if(agingChart) agingChart.destroy();
-      agingChart=new Chart(document.getElementById('agingChart'),{
-        type:'bar',
-        data:{labels:Object.keys(brandAges),datasets:[{label:'Avg Days to Fix',data:Object.values(brandAges),backgroundColor:'#9c27b0'}]},
-        options:{plugins:{legend:{display:false}}}
+      renderAll_oe();
+    }
+
+    function renderAll_oe(){
+      renderSummary_oe(); renderTable_oe(); renderCharts_oe(); renderBlockers_oe();
+      if(currentBrand_oe) renderDetails_oe(currentBrand_oe);
+    }
+
+    function renderSummary_oe(){
+      let t=0,r=0,o=0,a=0,u=0,n=0;
+      Object.values(data_oe).forEach(arr=>{
+        t+=arr.length; r+=arr.filter(i=>i.status==='Resolved').length; o+=arr.filter(i=>i.status==='Ongoing').length;
+        a+=arr.filter(i=>i.status==='Assigned').length; u+=arr.filter(i=>i.status==='Unresolved').length;
+        n+=arr.filter(i=>i.status==='Not Yet Assigned').length;
       });
+      document.getElementById('totalAsins_oe').textContent=t; document.getElementById('totalResolved_oe').textContent=r;
+      document.getElementById('totalOngoing_oe').textContent=o; document.getElementById('totalAssigned_oe').textContent=a;
+      document.getElementById('totalNotAssigned_oe').textContent=n; document.getElementById('totalUnresolved_oe').textContent=u;
+      document.getElementById('overallPct_oe').textContent= t? (Math.round(r/t*10000)/100)+'%' : '0%';
     }
 
-       
-function renderTopBlockers(){
-  const issues = {};
-  Object.values(itemsByBrand).flat().forEach(i => {
-    if(i.issues){
-      const key = i.issues;
-      if(!issues[key]) issues[key] = {};
-      if(!issues[key][i.brand]) issues[key][i.brand] = 0;
-      issues[key][i.brand]++;
-    }
-  });
-
-  const sortedIssues = Object.entries(issues)
-                             .map(([issue, brands]) => {
-                               const topBrand = Object.entries(brands)
-                                                      .sort((a,b)=>b[1]-a[1])[0];
-                               return {issue, brand: topBrand[0], count: topBrand[1]};
-                             })
-                             .sort((a,b) => b.count - a.count)
-                             .slice(0,10);
-
-  const list = document.getElementById('topIssuesList');
-  list.innerHTML = '';
-
-  sortedIssues.forEach(({issue, brand, count}) => {
-    const li = document.createElement('li');
-    li.className = 'list-group-item py-1 px-2';
-    li.style.fontSize = '0.78rem';
-    li.style.display = 'grid';
-    li.style.gridTemplateColumns = '2fr 1fr 1fr'; // Issue | Brand | Count
-    li.style.alignItems = 'center';
-    li.style.textAlign = 'left';
-    
-    // Create spans
-    const issueSpan = document.createElement('span');
-    issueSpan.textContent = issue;
-
-    const brandSpan = document.createElement('span');
-    brandSpan.textContent = brand;
-    brandSpan.style.textAlign = 'center';
-    brandSpan.style.fontWeight = 'bold';
-
-    const countSpan = document.createElement('span');
-    countSpan.textContent = `${count} ASIN${count>1?'s':''}`;
-    countSpan.style.textAlign = 'right';
-
-    li.appendChild(issueSpan);
-    li.appendChild(brandSpan);
-    li.appendChild(countSpan);
-
-    list.appendChild(li);
-  });
-}
-
-
-    function renderOwnerChart(){
-      const owners={},labels=[],data=[];
-      Object.values(itemsByBrand).flat().forEach(i=>{
-        if(i.owner){owners[i.owner]=(owners[i.owner]||0)+1;}
-      });
-      Object.entries(owners).forEach(([o,c])=>{labels.push(o);data.push(c);});
-      if(ownerChart) ownerChart.destroy();
-      ownerChart=new Chart(document.getElementById('ownerChart'),{
-        type:'bar',
-        data:{labels,datasets:[{label:'Items Assigned',data,backgroundColor:'#607d8b'}]},
-        options:{plugins:{legend:{display:false}}}
-      });
+    function renderTable_oe(){
+        const tbody=document.getElementById('brandsTableBody_oe'); tbody.innerHTML='';
+        const search=document.getElementById('brandSearchBox_oe').value.toLowerCase();
+        const rows=Object.entries(data_oe).map(([brand,arr])=>{
+            const t=arr.length,r=arr.filter(i=>i.status==='Resolved').length;
+            return {brand,t,r,o:arr.filter(i=>i.status==='Ongoing').length,a:arr.filter(i=>i.status==='Assigned').length,u:arr.filter(i=>i.status==='Unresolved').length,n:arr.filter(i=>i.status==='Not Yet Assigned').length,pct:t?Math.round(r/t*10000)/100:0};
+        }).filter(r=>!search||r.brand.toLowerCase().includes(search)).sort((a,b)=>b.t-a.t);
+        rows.forEach(r=>{
+            const tr=document.createElement('tr'); tr.classList.add('clickable');
+            tr.innerHTML=`<td><b>${r.brand}</b></td><td class="text-end">${r.t}</td><td class="text-end">${r.r}</td><td class="text-end">${r.o}</td><td class="text-end">${r.a}</td><td class="text-end">${r.u}</td><td class="text-end">${r.n}</td><td class="text-end">${r.pct}%</td><td class="text-end"><div class="progress progress-sm"><div class="progress-bar" style="width:${r.pct}%"></div></div></td>`;
+            tr.onclick=()=>{currentBrand_oe=r.brand; showDetailsView_oe(r.brand);};
+            tbody.appendChild(tr);
+        });
+        const list=document.getElementById('topBrandsList_oe'); list.innerHTML='';
+        rows.sort((a,b)=>b.pct-a.pct||b.r-a.r).slice(0,15).forEach(r=>{
+             list.innerHTML+=`<li class="list-group-item d-flex justify-content-between"><span>${r.brand}</span><span class="fw-bold">${r.pct}%</span></li>`;
+        });
     }
 
-    function showBrandDetails(brand){
-      document.getElementById('summaryView').style.display='none';
-      document.getElementById('brandDetails').style.display='block';
-      renderBrandDetails(brand);
-    }
-    function backToSummary(){
-      currentBrand=null;
-      document.getElementById('summaryView').style.display='block';
-      document.getElementById('brandDetails').style.display='none';
+    function renderCharts_oe(){
+        let counts={r:0,o:0,a:0,n:0};
+        Object.values(data_oe).flat().forEach(i=>{ if(i.status=='Resolved')counts.r++; else if(i.status=='Ongoing')counts.o++; else if(i.status=='Assigned')counts.a++; else counts.n++; });
+        if(charts_oe.doughnut) charts_oe.doughnut.destroy();
+        charts_oe.doughnut=new Chart(document.getElementById('doughnutChart_oe'),{type:'doughnut',data:{labels:['Resolved','Ongoing','Assigned','Not Yet'],datasets:[{data:[counts.r,counts.o,counts.a,counts.n],backgroundColor:['#42a5f5','#ff9800','#fdd835','#e0e0e0']}]},options:{plugins:{legend:{position:'bottom'}}}});
+
+        const weeks={};
+        Object.values(data_oe).flat().forEach(i=>{
+            const d=i.date||i.dateFixed; if(!d)return;
+            const w=new Date(d).toISOString().slice(0,7);
+            if(!weeks[w])weeks[w]={r:0,o:0};
+            if(i.status=='Resolved')weeks[w].r++; else if(i.status=='Ongoing')weeks[w].o++;
+        });
+        const lbls=Object.keys(weeks).sort();
+        if(charts_oe.trend) charts_oe.trend.destroy();
+        charts_oe.trend=new Chart(document.getElementById('trendsChart_oe'),{type:'line',data:{labels:lbls,datasets:[{label:'Resolved',data:lbls.map(l=>weeks[l].r),borderColor:'#42a5f5',fill:false},{label:'Ongoing',data:lbls.map(l=>weeks[l].o),borderColor:'#ff9800',fill:false}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
+
+        const brands=Object.keys(data_oe);
+        const resolvedData=brands.map(b=>data_oe[b].filter(i=>i.status=='Resolved').length);
+        const ongoingData=brands.map(b=>data_oe[b].filter(i=>i.status=='Ongoing').length);
+        if(charts_oe.workload) charts_oe.workload.destroy();
+        charts_oe.workload=new Chart(document.getElementById('workloadChart_oe'),{type:'bar',data:{labels:brands,datasets:[{label:'Resolved',data:resolvedData,backgroundColor:'#42a5f5'},{label:'Ongoing',data:ongoingData,backgroundColor:'#ff9800'}]},options:{scales:{x:{stacked:true},y:{stacked:true}}}});
+
+        const ages=brands.map(b=>{
+            const diffs=data_oe[b].filter(i=>i.date&&i.dateFixed).map(i=>(new Date(i.dateFixed)-new Date(i.date))/(1000*60*60*24));
+            return diffs.length ? Math.round(diffs.reduce((a,c)=>a+c,0)/diffs.length) : 0;
+        });
+        if(charts_oe.aging) charts_oe.aging.destroy();
+        charts_oe.aging=new Chart(document.getElementById('agingChart_oe'),{type:'bar',data:{labels:brands,datasets:[{label:'Avg Days',data:ages,backgroundColor:'#9c27b0'}]},options:{plugins:{legend:{display:false}}}});
     }
 
-    function renderBrandDetails(brand){
-      document.getElementById('brandDetailsTitle').textContent=brand;
-      const statusFilter=document.getElementById('statusFilter').value;
-      const search=document.getElementById('searchBox').value.toLowerCase();
-      const tbody=document.getElementById('brandItemsBody'); tbody.innerHTML='';
-      itemsByBrand[brand].forEach(i=>{
-        if(statusFilter!=='All'&&i.status!==statusFilter) return;
-        if(search&&![i.date,i.sku,i.asin,i.issues].some(f=>f.toLowerCase().includes(search))) return;
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${i.date}</td><td>${i.sku}</td><td>${i.asin}</td>
-        <td>${i.status}</td><td>${i.issues}</td><td>${i.dateFixed}</td>`;
-        tbody.appendChild(tr);
-      });
+    function renderBlockers_oe(){
+       const issues={};
+       Object.values(data_oe).flat().forEach(i=>{ if(i.issues){ const k=i.issues; if(!issues[k])issues[k]={}; if(!issues[k][i.brand])issues[k][i.brand]=0; issues[k][i.brand]++; }});
+       const sorted=Object.entries(issues).map(([is,br])=>{ const top=Object.entries(br).sort((a,b)=>b[1]-a[1])[0]; return {is,b:top[0],c:top[1]}; }).sort((a,b)=>b.c-a.c).slice(0,10);
+       const l=document.getElementById('topIssuesList_oe'); l.innerHTML='';
+       sorted.forEach(x=>{ l.innerHTML+=`<li class="list-group-item d-grid" style="grid-template-columns:2fr 1fr 1fr;font-size:0.78rem;"><span>${x.is}</span><span class="text-center fw-bold">${x.b}</span><span class="text-end">${x.c} ASINs</span></li>`; });
     }
 
-    document.getElementById('statusFilter').onchange=()=>{if(currentBrand) renderBrandDetails(currentBrand);};
-    document.getElementById('searchBox').oninput=()=>{if(currentBrand) renderBrandDetails(currentBrand);};
-    
-    // ✅ Fix accordion resize handler
-  document.querySelectorAll('.accordion-collapse').forEach(collapse => {
-    collapse.addEventListener('shown.bs.collapse', function () {
-      if (trendsChart) trendsChart.resize();
-      if (agingChart) agingChart.resize();
-      if (workloadChart) workloadChart.resize();
-      if (ownerChart) ownerChart.resize();
+    function showDetailsView_oe(brand){
+        sort_oe = { col: 'date', dir: 1 }; // Default Oldest to Newest
+        currentPage_oe = 1;
+        document.getElementById('summaryView_oe').style.display='none';
+        document.getElementById('brandDetails_oe').style.display='block';
+        updateIcons_oe(); renderDetails_oe(brand);
+    }
+    function backToSummary_oe(){
+        currentBrand_oe=null;
+        document.getElementById('summaryView_oe').style.display='block';
+        document.getElementById('brandDetails_oe').style.display='none';
+    }
+
+    function toggleSort_oe(col) {
+        if(sort_oe.col===col) sort_oe.dir*=-1; else { sort_oe.col=col; sort_oe.dir=1; }
+        updateIcons_oe(); renderDetails_oe(currentBrand_oe);
+    }
+    function updateIcons_oe(){
+        ['date','sku','asin','status','issues','dateFixed'].forEach(k=>{
+            const i=document.getElementById(`sort_icon_${k}_oe`);
+            if(i){ i.className='bi bi-arrow-down-up sort-icon'; i.classList.remove('active'); }
+        });
+        if(sort_oe.col){
+            const i=document.getElementById(`sort_icon_${sort_oe.col}_oe`);
+            if(i){ i.classList.add('active'); i.className=sort_oe.dir===1?'bi bi-sort-down sort-icon active':'bi bi-sort-up sort-icon active'; }
+        }
+    }
+
+    function changePage_oe(delta) {
+        currentPage_oe += delta;
+        renderDetails_oe(currentBrand_oe);
+    }
+
+    function renderDetails_oe(brand){
+        document.getElementById('brandDetailsTitle_oe').textContent=brand;
+        const filter=document.getElementById('statusFilter_oe').value;
+        const search=document.getElementById('searchBox_oe').value.toLowerCase();
+        const tbody=document.getElementById('brandItemsBody_oe'); tbody.innerHTML='';
+        
+        let items=[...data_oe[brand]];
+
+        // Filter
+        items = items.filter(i => {
+           if(filter!=='All' && i.status!==filter) return false;
+           if(search && ![i.date,i.sku,i.asin,i.issues].some(f=>f.toLowerCase().includes(search))) return false;
+           return true;
+        });
+
+        // Sort
+        if(sort_oe.col){
+            items.sort((a,b)=>{
+                let vA=a[sort_oe.col]||'', vB=b[sort_oe.col]||'';
+                if(['date','dateFixed'].includes(sort_oe.col)){ vA=vA?new Date(vA).getTime():0; vB=vB?new Date(vB).getTime():0; return (vA-vB)*sort_oe.dir; }
+                return vA.localeCompare(vB)*sort_oe.dir;
+            });
+        }
+        
+        // PAGINATION LOGIC
+        const totalItems = items.length;
+        const totalPages = Math.ceil(totalItems / ROWS_PER_PAGE) || 1;
+        
+        if (currentPage_oe < 1) currentPage_oe = 1;
+        if (currentPage_oe > totalPages) currentPage_oe = totalPages;
+
+        const start = (currentPage_oe - 1) * ROWS_PER_PAGE;
+        const end = start + ROWS_PER_PAGE;
+        const pageItems = items.slice(start, end);
+
+        document.getElementById('pageInfo_oe').textContent = `Page ${currentPage_oe} of ${totalPages} (${totalItems} items)`;
+        document.getElementById('btnPrev_oe').disabled = (currentPage_oe === 1);
+        document.getElementById('btnNext_oe').disabled = (currentPage_oe === totalPages);
+
+        pageItems.forEach(i=>{
+            tbody.innerHTML+=`<tr><td>${i.date}</td><td>${i.sku}</td><td>${i.asin}</td><td>${i.status}</td><td>${i.issues}</td><td>${i.dateFixed}</td></tr>`;
+        });
+    }
+
+    document.getElementById('brandSearchBox_oe').oninput=renderTable_oe;
+    document.getElementById('statusFilter_oe').onchange=()=>{currentPage_oe=1; renderDetails_oe(currentBrand_oe);};
+    document.getElementById('searchBox_oe').oninput=()=>{currentPage_oe=1; renderDetails_oe(currentBrand_oe);};
+
+    document.querySelectorAll('.accordion-collapse').forEach(c=>{
+        c.addEventListener('shown.bs.collapse', ()=>{
+            Object.values(charts_2p).forEach(ch=>ch?.resize());
+            Object.values(charts_oe).forEach(ch=>ch?.resize());
+        });
     });
-  });
 
-    loadSheet(); setInterval(loadSheet,120000);
-   var _0x1a2b = ["YWRtaW4=", "YWRtaW4xMjMhQCM="];
-
-  function _0x3c4d(index) {
-    return atob(_0x1a2b[index]);
-  }
-
-  function login() {
-    var u = document.getElementById("loginUser").value;
-    var p = document.getElementById("loginPass").value;
-    if (u === _0x3c4d(0) && p === _0x3c4d(1)) {
-      localStorage.setItem("loggedIn", "true");
-      showDashboard();
-    } else {
-      document.getElementById("loginError").textContent = "Incorrect username or password";
+    async function initAll(){
+        showLoading();
+        await Promise.all([loadSheet_2p(), loadSheet_oe()]);
+        hideLoading();
     }
-  }
 
-  function showDashboard() {
-    document.getElementById("loginOverlay").style.display = "none";
-    document.getElementById("dashboard").style.display = "block";
-  }
+    // --- AUTO REFRESH WITH LOADING INDICATOR ---
+    setInterval(async () => {
+        showLoading();
+        await Promise.all([loadSheet_2p(), loadSheet_oe()]);
+        hideLoading();
+    }, 120000);
 
-  // Auto-login if already authenticated
-  if (localStorage.getItem("loggedIn") === "true") {
-    showDashboard();
-  }
-
-  // Optional: logout function
-  function logout() {
-    localStorage.removeItem("loggedIn");
-    location.reload();
-  }
-  const togglePass = document.getElementById('togglePass');
-  const loginPass = document.getElementById('loginPass');
-  const loginUser = document.getElementById('loginUser');
-
-  // Toggle password visibility
-  togglePass.addEventListener('click', () => {
-    if (loginPass.type === 'password') {
-      loginPass.type = 'text';
-      togglePass.classList.replace('bi-eye-fill', 'bi-eye-slash-fill');
-    } else {
-      loginPass.type = 'password';
-      togglePass.classList.replace('bi-eye-slash-fill', 'bi-eye-fill');
+    var _0x1a2b=["YWRtaW4=","YWRtaW4xMjMhQCM="];
+    function _0x3c4d(i){return atob(_0x1a2b[i]);}
+    function login(){
+      if(document.getElementById("loginUser").value===_0x3c4d(0)&&document.getElementById("loginPass").value===_0x3c4d(1)){
+        localStorage.setItem("loggedIn","true"); showDashboard();
+      }else{ document.getElementById("loginError").textContent="Incorrect username or password"; }
     }
-  });
+    function showDashboard(){
+      document.getElementById("loginOverlay").style.display="none";
+      document.getElementById("dashboard").style.display="block";
+      initAll();
+    }
+    if(localStorage.getItem("loggedIn")==="true") showDashboard();
+    function logout(){ localStorage.removeItem("loggedIn"); location.reload(); }
 
-  // Press Enter to login
-  [loginUser, loginPass].forEach(input => {
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        login();
-      }
+    const tp=document.getElementById('togglePass'), lp=document.getElementById('loginPass'), lu=document.getElementById('loginUser');
+    tp.addEventListener('click',()=>{
+      const type=lp.type==='password'?'text':'password';
+      lp.type=type; tp.className=`bi bi-eye${type==='password'?'-fill':'-slash-fill'} position-absolute`;
     });
-  });
+    [lu,lp].forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')login();}));
   </script>
 </body>
 </html>
