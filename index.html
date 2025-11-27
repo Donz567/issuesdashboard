@@ -107,200 +107,193 @@
 
   <main class="container-lg" id="dashboard" style="display:none;">
 
-    <div id="view_2p" class="view-container active">
-      <div id="summaryView_2p">
-        <div class="row g-3 mb-3">
-            <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Total items</div><div id="totalAsins_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-box-seam fs-3 text-primary"></i></div></div>
-            <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Resolved</div><div id="totalResolved_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-check-circle fs-3 text-success"></i></div></div>
-            <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Ongoing</div><div id="totalOngoing_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-hourglass-split fs-3 text-warning"></i></div></div>
-            <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Assigned</div><div id="totalAssigned_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-person-check fs-3 text-info"></i></div></div>
-            <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Not Yet Assigned</div><div id="totalNotAssigned_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-person-x fs-3 text-secondary"></i></div></div>
-            <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">% Fixed</div><div id="overallPct_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-percent fs-3 text-success"></i></div></div>
-        </div>
+  <div id="view_2p" class="view-container active">
+    <div id="summaryView_2p">
+      <div class="row g-3 mb-3">
+          <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Total items</div><div id="totalAsins_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-box-seam fs-3 text-primary"></i></div></div>
+          <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Resolved</div><div id="totalResolved_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-check-circle fs-3 text-success"></i></div></div>
+          <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Ongoing</div><div id="totalOngoing_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-hourglass-split fs-3 text-warning"></i></div></div>
+          <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Assigned</div><div id="totalAssigned_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-person-check fs-3 text-info"></i></div></div>
+          <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Not Yet Assigned</div><div id="totalNotAssigned_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-person-x fs-3 text-secondary"></i></div></div>
+          <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">% Fixed</div><div id="overallPct_2p" class="fw-bold fs-5">—</div></div><i class="bi bi-percent fs-3 text-success"></i></div></div>
+      </div>
 
-        <div class="row g-3 mb-3">
-          <div class="col-md-6"><div class="accordion" id="accordionTrends_2p"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTrends_2p">📈 Trends Over Time</button></h2><div id="collapseTrends_2p" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="trendsChart_2p" height="150"></canvas></div></div></div></div></div>
-          <div class="col-md-6"><div class="accordion" id="accordionAging_2p"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAging_2p">⏳ Aging Issues (Avg Days)</button></h2><div id="collapseAging_2p" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="agingChart_2p" height="150"></canvas></div></div></div></div></div>
-          <div class="col-md-6"><div class="accordion" id="accordionWorkload_2p"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWorkload_2p">⚖️ Brand Workload Balance</button></h2><div id="collapseWorkload_2p" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="workloadChart_2p" height="150"></canvas></div></div></div></div></div>
-          <div class="col-md-6"><div class="accordion" id="accordionBlockers_2p"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBlockers_2p">🚧 Top Issues</button></h2><div id="collapseBlockers_2p" class="accordion-collapse collapse"><div class="accordion-body p-2"><ul id="topIssuesList_2p" class="list-group list-group-flush small"></ul></div></div></div></div></div>
-        </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6"><div class="accordion" id="accordionTrends_2p"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTrends_2p">📈 Trends Over Time</button></h2><div id="collapseTrends_2p" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="trendsChart_2p" height="150"></canvas></div></div></div></div></div>
+        <div class="col-md-6"><div class="accordion" id="accordionAging_2p"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAging_2p">⏳ Aging Issues (Avg Days)</button></h2><div id="collapseAging_2p" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="agingChart_2p" height="150"></canvas></div></div></div></div></div>
+        <div class="col-md-6"><div class="accordion" id="accordionWorkload_2p"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWorkload_2p">⚖️ Brand Workload Balance</button></h2><div id="collapseWorkload_2p" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="workloadChart_2p" height="150"></canvas></div></div></div></div></div>
+        <div class="col-md-6"><div class="accordion" id="accordionBlockers_2p"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBlockers_2p">🚧 Top Issues</button></h2><div id="collapseBlockers_2p" class="accordion-collapse collapse"><div class="accordion-body p-2"><ul id="topIssuesList_2p" class="list-group list-group-flush small"></ul></div></div></div></div></div>
+      </div>
 
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-lg-8">
-            <div class="card p-3 shadow-sm">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <div class="fw-bold">Per-brand status (2P/1P)</div>
-                <div class="small-muted">Sorted by total items</div>
-              </div>
-              <div class="mb-2">
-                <input id="brandSearchBox_2p" type="text" class="form-control form-control-sm" placeholder="Search brand..." style="width: 30%;">
-              </div>
-              <div class="table-responsive" style="max-height: 60vh; overflow: auto;">
-                <table class="table table-hover mb-0 dashboard-table" id="brandTable_2p">
-                  <thead><tr><th>Brand</th><th class="text-end">Items</th><th class="text-end">Resolved</th><th class="text-end">Ongoing</th><th class="text-end">Assigned</th><th class="text-end">Not Yet Assigned</th><th class="text-end">% Fixed</th><th class="text-end">Progress</th></tr></thead>
-                  <tbody id="brandsTableBody_2p"></tbody>
-                </table>
-              </div>
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-lg-8">
+          <div class="card p-3 shadow-sm" id="leftCard_2p" style="display: flex; flex-direction: column;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="fw-bold">Per-brand status (2P/1P)</div>
+              <div class="small-muted">Sorted by total items</div>
             </div>
-          </div>
-          <div class="col-12 col-lg-4">
-            <div class="card p-3 shadow-sm text-center">
-              <div class="fw-bold mb-2">Overall breakdown (2P/1P)</div>
-              <canvas id="doughnutChart_2p" height="200"></canvas>
-              <div class="card p-2 shadow-sm mt-3">
-                <div class="fw-bold mb-2">Top 15 Brands (Fixing %)</div>
-                <ul id="topBrandsList_2p" class="list-group list-group-flush small"></ul>
-              </div>
+            <div class="mb-2">
+              <input id="brandSearchBox_2p" type="text" class="form-control form-control-sm" placeholder="Search brand..." style="width: 30%;">
+            </div>
+            <div class="table-responsive" style="flex: 1; overflow-y: auto; min-height: 0;">
+              <table class="table table-hover mb-0 dashboard-table" id="brandTable_2p">
+                <thead><tr><th>Brand</th><th class="text-end">Items</th><th class="text-end">Resolved</th><th class="text-end">Ongoing</th><th class="text-end">Assigned</th><th class="text-end">Not Yet Assigned</th><th class="text-end">% Fixed</th><th class="text-end">Progress</th></tr></thead>
+                <tbody id="brandsTableBody_2p"></tbody>
+              </table>
             </div>
           </div>
         </div>
-      </div> 
-
-      <div id="brandDetails_2p" style="display:none;height: 90vh;">
-        <div class="card p-3 shadow-sm">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <div class="d-flex flex-column">
-              <button class="btn btn-sm btn-outline-secondary mb-3 w-auto" onclick="backToSummary_2p()">← Back</button>
-              <h5 id="brandDetailsTitle_2p" class="mb-0 fw-bold"></h5>
+        
+        <div class="col-12 col-lg-4">
+          <div class="card p-3 shadow-sm text-center" id="rightCard_2p">
+            <div class="fw-bold mb-2">Overall breakdown (2P/1P)</div>
+            <canvas id="doughnutChart_2p" height="200"></canvas>
+            <div class="card p-2 shadow-sm mt-3">
+              <div class="fw-bold mb-2">Top 15 Brands (Fixing %)</div>
+              <ul id="topBrandsList_2p" class="list-group list-group-flush small"></ul>
             </div>
-            <div class="d-flex flex-column align-items-end">
-                <div class="text-muted small mb-1" id="pageInfo_2p"></div>
-                <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-secondary" id="btnPrev_2p" onclick="changePage_2p(-1)">Previous</button>
-                    <button class="btn btn-outline-secondary" id="btnNext_2p" onclick="changePage_2p(1)">Next</button>
-                </div>
-            </div>
-          </div>
-
-          <div class="d-flex mb-2">
-            <select id="statusFilter_2p" class="form-select form-select-sm me-2" style="width:auto">
-              <option value="All">All Statuses</option>
-              <option value="Resolved">Resolved</option>
-              <option value="Ongoing">Ongoing</option>
-              <option value="Assigned">Assigned</option>
-              <option value="Not Yet Assigned">Not Yet Assigned</option>
-            </select>
-            <input id="searchBox_2p" type="text" class="form-control form-control-sm" style="max-width:250px" placeholder="Search...">
-            <div class="ms-auto small-muted pt-1">Click headers to sort</div>
-          </div>
-          <div class="table-responsive" style="max-height:75vh;overflow:auto;">
-            <table class="table table-sm table-hover mb-0 details-table" style="table-layout:fixed; width:100%;" id="DetailsbrandTable_2p">
-              <colgroup><col style="width:15%"><col style="width:15%"><col style="width:15%"><col style="width:12%"><col style="width:30%"><col style="width:13%"></colgroup>
-              <thead>
-                <tr>
-                  <th onclick="toggleSort_2p('date')">Date Added <i id="sort_icon_date_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
-                  <th onclick="toggleSort_2p('sku')">SKU <i id="sort_icon_sku_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
-                  <th onclick="toggleSort_2p('asin')">ASIN <i id="sort_icon_asin_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
-                  <th onclick="toggleSort_2p('status')">Status <i id="sort_icon_status_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
-                  <th onclick="toggleSort_2p('issues')">Issues <i id="sort_icon_issues_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
-                  <th onclick="toggleSort_2p('dateFixed')">Date Fixed <i id="sort_icon_dateFixed_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
-                </tr>
-              </thead>
-              <tbody id="brandItemsBody_2p"></tbody>
-            </table>
           </div>
         </div>
       </div>
     </div> 
 
-
-    <div id="view_oe" class="view-container">
-      <div id="summaryView_oe">
-        <div class="row g-3 mb-3">
-             <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Total items</div><div id="totalAsins_oe" class="fw-bold fs-5">—</div></div><i class="bi bi-box-seam fs-3 text-primary"></i></div></div>
-             <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Resolved</div><div id="totalResolved_oe" class="fw-bold fs-5">—</div></div><i class="bi bi-check-circle fs-3 text-success"></i></div></div>
-             <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Ongoing</div><div id="totalOngoing_oe" class="fw-bold fs-5">—</div></div><i class="bi bi-hourglass-split fs-3 text-warning"></i></div></div>
-             <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Assigned</div><div id="totalAssigned_oe" class="fw-bold fs-5">—</div></div><i class="bi bi-person-check fs-3 text-info"></i></div></div>
-             <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Not Yet Assigned</div><div id="totalNotAssigned_oe" class="fw-bold fs-5">—</div></div><i class="bi bi-person-x fs-3 text-secondary"></i></div></div>
-             <div class="col-6 col-md-2"><div class="card px-2 py-3 stat-card shadow-sm d-flex align-items-center justify-content-center flex-row"><div class="text-center pe-3"><div class="small-muted d-flex align-items-center gap-1" style="font-size:0.75rem;">Unresolved <i class="bi bi-exclamation-diamond text-danger"></i></div><div id="totalUnresolved_oe" class="fw-bold fs-5 text-danger">—</div></div><div style="width: 1px; height: 35px; background-color: #dee2e6;"></div><div class="text-center ps-3"><div class="small-muted d-flex align-items-center gap-1" style="font-size:0.75rem;">% Fixed <i class="bi bi-percent text-success"></i></div><div id="overallPct_oe" class="fw-bold fs-5 text-success">—</div></div></div></div>
-        </div>
-
-        <div class="row g-3 mb-3">
-            <div class="col-md-6"><div class="accordion" id="accordionTrends_oe"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTrends_oe">📈 Trends Over Time</button></h2><div id="collapseTrends_oe" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="trendsChart_oe" height="150"></canvas></div></div></div></div></div>
-            <div class="col-md-6"><div class="accordion" id="accordionAging_oe"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAging_oe">⏳ Aging Issues (Avg Days)</button></h2><div id="collapseAging_oe" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="agingChart_oe" height="150"></canvas></div></div></div></div></div>
-            <div class="col-md-6"><div class="accordion" id="accordionWorkload_oe"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWorkload_oe">⚖️ Brand Workload Balance</button></h2><div id="collapseWorkload_oe" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="workloadChart_oe" height="150"></canvas></div></div></div></div></div>
-            <div class="col-md-6"><div class="accordion" id="accordionBlockers_oe"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBlockers_oe">🚧 Top Issues</button></h2><div id="collapseBlockers_oe" class="accordion-collapse collapse"><div class="accordion-body p-2"><ul id="topIssuesList_oe" class="list-group list-group-flush small"></ul></div></div></div></div></div>
-        </div>
-
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-lg-8">
-            <div class="card p-3 shadow-sm">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <div class="fw-bold">Per-brand status (3P)</div>
-                <div class="small-muted">Sorted by total items</div>
-              </div>
-              <div class="mb-2">
-                <input id="brandSearchBox_oe" type="text" class="form-control form-control-sm" placeholder="Search brand..." style="width: 30%;">
-              </div>
-              <div class="table-responsive" style="max-height: 60vh; overflow: auto;">
-                <table class="table table-hover mb-0 dashboard-table" id="brandTable_oe">
-                  <thead><tr><th>Brand</th><th class="text-end">Items</th><th class="text-end">Resolved</th><th class="text-end">Ongoing</th><th class="text-end">Assigned</th><th class="text-end">Unresolved</th><th class="text-end">Not Yet Assigned</th><th class="text-end">% Fixed</th><th class="text-end">Progress</th></tr></thead>
-                  <tbody id="brandsTableBody_oe"></tbody>
-                </table>
-              </div>
+    <div id="brandDetails_2p" style="display:none;height: 90vh;">
+      <div class="card p-3 shadow-sm">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div class="d-flex flex-column">
+            <button class="btn btn-sm btn-outline-secondary mb-3 w-auto" onclick="backToSummary_2p()">← Back</button>
+            <h5 id="brandDetailsTitle_2p" class="mb-0 fw-bold"></h5>
+          </div>
+          <div class="d-flex flex-column align-items-end">
+            <div class="text-muted small mb-1" id="pageInfo_2p"></div>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-secondary" id="btnPrev_2p" onclick="changePage_2p(-1)">Previous</button>
+                <button class="btn btn-outline-secondary" id="btnNext_2p" onclick="changePage_2p(1)">Next</button>
             </div>
           </div>
-          <div class="col-12 col-lg-4">
-            <div class="card p-3 shadow-sm text-center">
-              <div class="fw-bold mb-2">Overall breakdown (3P)</div>
-              <canvas id="doughnutChart_oe" height="200"></canvas>
-              <div class="card p-2 shadow-sm mt-3">
-                <div class="fw-bold mb-2">Top 15 Brands (Fixing %)</div>
-                <ul id="topBrandsList_oe" class="list-group list-group-flush small"></ul>
-              </div>
-            </div>
-          </div>
+        </div>
+        <div class="d-flex mb-2">
+          <select id="statusFilter_2p" class="form-select form-select-sm me-2" style="width:auto">
+            <option value="All">All Statuses</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Ongoing">Ongoing</option>
+            <option value="Assigned">Assigned</option>
+            <option value="Not Yet Assigned">Not Yet Assigned</option>
+          </select>
+          <input id="searchBox_2p" type="text" class="form-control form-control-sm" style="max-width:250px" placeholder="Search...">
+        </div>
+        <div class="table-responsive" style="max-height:75vh;overflow:auto;">
+          <table class="table table-sm table-hover mb-0 details-table" style="table-layout:fixed; width:100%;" id="DetailsbrandTable_2p">
+             <colgroup><col style="width:15%"><col style="width:15%"><col style="width:15%"><col style="width:12%"><col style="width:30%"><col style="width:13%"></colgroup>
+             <thead><tr>
+               <th onclick="toggleSort_2p('date')">Date Added <i id="sort_icon_date_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
+               <th onclick="toggleSort_2p('sku')">SKU <i id="sort_icon_sku_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
+               <th onclick="toggleSort_2p('asin')">ASIN <i id="sort_icon_asin_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
+               <th onclick="toggleSort_2p('status')">Status <i id="sort_icon_status_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
+               <th onclick="toggleSort_2p('issues')">Issues <i id="sort_icon_issues_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
+               <th onclick="toggleSort_2p('dateFixed')">Date Fixed <i id="sort_icon_dateFixed_2p" class="bi bi-arrow-down-up sort-icon"></i></th>
+             </tr></thead>
+             <tbody id="brandItemsBody_2p"></tbody>
+          </table>
         </div>
       </div>
+    </div>
+  </div> 
 
-      <div id="brandDetails_oe" style="display:none;height: 90vh;">
-        <div class="card p-3 shadow-sm">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <div class="d-flex flex-column">
-              <button class="btn btn-sm btn-outline-secondary mb-3 w-auto" onclick="backToSummary_oe()">← Back</button>
-              <h5 id="brandDetailsTitle_oe" class="mb-0 fw-bold"></h5>
+  <div id="view_oe" class="view-container">
+    <div id="summaryView_oe">
+      <div class="row g-3 mb-3">
+           <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Total items</div><div id="totalAsins_oe" class="fw-bold fs-5">—</div></div><i class="bi bi-box-seam fs-3 text-primary"></i></div></div>
+           <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Resolved</div><div id="totalResolved_oe" class="fw-bold fs-5">—</div></div><i class="bi bi-check-circle fs-3 text-success"></i></div></div>
+           <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Ongoing</div><div id="totalOngoing_oe" class="fw-bold fs-5">—</div></div><i class="bi bi-hourglass-split fs-3 text-warning"></i></div></div>
+           <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Assigned</div><div id="totalAssigned_oe" class="fw-bold fs-5">—</div></div><i class="bi bi-person-check fs-3 text-info"></i></div></div>
+           <div class="col-6 col-md-2"><div class="card p-3 stat-card shadow-sm d-flex align-items-center justify-content-evenly flex-row"><div class="text-start me-2"><div class="small-muted">Not Yet Assigned</div><div id="totalNotAssigned_oe" class="fw-bold fs-5">—</div></div><i class="bi bi-person-x fs-3 text-secondary"></i></div></div>
+           <div class="col-6 col-md-2"><div class="card px-2 py-3 stat-card shadow-sm d-flex align-items-center justify-content-center flex-row"><div class="text-center pe-3"><div class="small-muted d-flex align-items-center gap-1" style="font-size:0.75rem;">Unresolved <i class="bi bi-exclamation-diamond text-danger"></i></div><div id="totalUnresolved_oe" class="fw-bold fs-5 text-danger">—</div></div><div style="width: 1px; height: 35px; background-color: #dee2e6;"></div><div class="text-center ps-3"><div class="small-muted d-flex align-items-center gap-1" style="font-size:0.75rem;">% Fixed <i class="bi bi-percent text-success"></i></div><div id="overallPct_oe" class="fw-bold fs-5 text-success">—</div></div></div></div>
+      </div>
+
+      <div class="row g-3 mb-3">
+          <div class="col-md-6"><div class="accordion" id="accordionTrends_oe"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTrends_oe">📈 Trends Over Time</button></h2><div id="collapseTrends_oe" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="trendsChart_oe" height="150"></canvas></div></div></div></div></div>
+          <div class="col-md-6"><div class="accordion" id="accordionAging_oe"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAging_oe">⏳ Aging Issues (Avg Days)</button></h2><div id="collapseAging_oe" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="agingChart_oe" height="150"></canvas></div></div></div></div></div>
+          <div class="col-md-6"><div class="accordion" id="accordionWorkload_oe"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWorkload_oe">⚖️ Brand Workload Balance</button></h2><div id="collapseWorkload_oe" class="accordion-collapse collapse"><div class="accordion-body"><canvas id="workloadChart_oe" height="150"></canvas></div></div></div></div></div>
+          <div class="col-md-6"><div class="accordion" id="accordionBlockers_oe"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBlockers_oe">🚧 Top Issues</button></h2><div id="collapseBlockers_oe" class="accordion-collapse collapse"><div class="accordion-body p-2"><ul id="topIssuesList_oe" class="list-group list-group-flush small"></ul></div></div></div></div></div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-lg-8">
+          <div class="card p-3 shadow-sm" id="leftCard_oe" style="display: flex; flex-direction: column;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="fw-bold">Per-brand status (3P)</div>
+              <div class="small-muted">Sorted by total items</div>
             </div>
-            <div class="d-flex flex-column align-items-end">
-                <div class="text-muted small mb-1" id="pageInfo_oe"></div>
-                <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-secondary" id="btnPrev_oe" onclick="changePage_oe(-1)">Previous</button>
-                    <button class="btn btn-outline-secondary" id="btnNext_oe" onclick="changePage_oe(1)">Next</button>
-                </div>
+            <div class="mb-2">
+              <input id="brandSearchBox_oe" type="text" class="form-control form-control-sm" placeholder="Search brand..." style="width: 30%;">
+            </div>
+            <div class="table-responsive" style="flex: 1; overflow-y: auto; min-height: 0;">
+              <table class="table table-hover mb-0 dashboard-table" id="brandTable_oe">
+                <thead><tr><th>Brand</th><th class="text-end">Items</th><th class="text-end">Resolved</th><th class="text-end">Ongoing</th><th class="text-end">Assigned</th><th class="text-end">Unresolved</th><th class="text-end">Not Yet Assigned</th><th class="text-end">% Fixed</th><th class="text-end">Progress</th></tr></thead>
+                <tbody id="brandsTableBody_oe"></tbody>
+              </table>
             </div>
           </div>
-
-          <div class="d-flex mb-2">
-            <select id="statusFilter_oe" class="form-select form-select-sm me-2" style="width:auto">
-              <option value="All">All Statuses</option>
-              <option value="Resolved">Resolved</option>
-              <option value="Ongoing">Ongoing</option>
-              <option value="Assigned">Assigned</option>
-              <option value="Not Yet Assigned">Not Yet Assigned</option>
-            </select>
-            <input id="searchBox_oe" type="text" class="form-control form-control-sm" style="max-width:250px" placeholder="Search...">
-            <div class="ms-auto small-muted pt-1">Click headers to sort</div>
-          </div>
-          <div class="table-responsive" style="max-height:75vh;overflow:auto;">
-            <table class="table table-sm table-hover mb-0 details-table" style="table-layout:fixed; width:100%;" id="DetailsbrandTable_oe">
-              <colgroup><col style="width:15%"><col style="width:15%"><col style="width:15%"><col style="width:12%"><col style="width:30%"><col style="width:13%"></colgroup>
-              <thead>
-                <tr>
-                  <th onclick="toggleSort_oe('date')">Date Added <i id="sort_icon_date_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
-                  <th onclick="toggleSort_oe('sku')">SKU <i id="sort_icon_sku_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
-                  <th onclick="toggleSort_oe('asin')">ASIN <i id="sort_icon_asin_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
-                  <th onclick="toggleSort_oe('status')">Status <i id="sort_icon_status_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
-                  <th onclick="toggleSort_oe('issues')">Issues <i id="sort_icon_issues_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
-                  <th onclick="toggleSort_oe('dateFixed')">Date Fixed <i id="sort_icon_dateFixed_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
-                </tr>
-              </thead>
-              <tbody id="brandItemsBody_oe"></tbody>
-            </table>
+        </div>
+        
+        <div class="col-12 col-lg-4">
+          <div class="card p-3 shadow-sm text-center" id="rightCard_oe">
+            <div class="fw-bold mb-2">Overall breakdown (3P)</div>
+            <canvas id="doughnutChart_oe" height="200"></canvas>
+            <div class="card p-2 shadow-sm mt-3">
+              <div class="fw-bold mb-2">Top 15 Brands (Fixing %)</div>
+              <ul id="topBrandsList_oe" class="list-group list-group-flush small"></ul>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-  </main>
+    <div id="brandDetails_oe" style="display:none;height: 90vh;">
+      <div class="card p-3 shadow-sm">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div class="d-flex flex-column">
+            <button class="btn btn-sm btn-outline-secondary mb-3 w-auto" onclick="backToSummary_oe()">← Back</button>
+            <h5 id="brandDetailsTitle_oe" class="mb-0 fw-bold"></h5>
+          </div>
+          <div class="d-flex flex-column align-items-end">
+              <div class="text-muted small mb-1" id="pageInfo_oe"></div>
+              <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-secondary" id="btnPrev_oe" onclick="changePage_oe(-1)">Previous</button>
+                  <button class="btn btn-outline-secondary" id="btnNext_oe" onclick="changePage_oe(1)">Next</button>
+              </div>
+          </div>
+        </div>
+        <div class="d-flex mb-2">
+          <select id="statusFilter_oe" class="form-select form-select-sm me-2" style="width:auto">
+            <option value="All">All Statuses</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Ongoing">Ongoing</option>
+            <option value="Assigned">Assigned</option>
+            <option value="Not Yet Assigned">Not Yet Assigned</option>
+          </select>
+          <input id="searchBox_oe" type="text" class="form-control form-control-sm" style="max-width:250px" placeholder="Search...">
+        </div>
+        <div class="table-responsive" style="max-height:75vh;overflow:auto;">
+          <table class="table table-sm table-hover mb-0 details-table" style="table-layout:fixed; width:100%;" id="DetailsbrandTable_oe">
+            <colgroup><col style="width:15%"><col style="width:15%"><col style="width:15%"><col style="width:12%"><col style="width:30%"><col style="width:13%"></colgroup>
+            <thead><tr>
+               <th onclick="toggleSort_oe('date')">Date Added <i id="sort_icon_date_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
+               <th onclick="toggleSort_oe('sku')">SKU <i id="sort_icon_sku_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
+               <th onclick="toggleSort_oe('asin')">ASIN <i id="sort_icon_asin_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
+               <th onclick="toggleSort_oe('status')">Status <i id="sort_icon_status_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
+               <th onclick="toggleSort_oe('issues')">Issues <i id="sort_icon_issues_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
+               <th onclick="toggleSort_oe('dateFixed')">Date Fixed <i id="sort_icon_dateFixed_oe" class="bi bi-arrow-down-up sort-icon"></i></th>
+             </tr></thead>
+            <tbody id="brandItemsBody_oe"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
 
   <footer style="text-align: center;color: gray;font-family: 'Courier New', Courier, monospace;font-size: small;font-weight: bold;">&copy;2025 Listings Exclusive - DPC</footer>
 
@@ -334,6 +327,8 @@
             document.title = "3P Brand Issues Dashboard";
             document.getElementById('navTitle').textContent = "3P Brand Issues Dashboard";
         }
+
+        setTimeout(() => alignCardHeights(viewName), 50);
     }
 
     // ==========================================
@@ -460,6 +455,8 @@
     function renderAll_2p(){
       renderSummary_2p(); renderTable_2p(); renderCharts_2p(); renderBlockers_2p();
       if(currentBrand_2p) renderDetails_2p(currentBrand_2p);
+
+      setTimeout(() => alignCardHeights('2p'), 100);
     }
 
     function renderSummary_2p(){
@@ -728,6 +725,8 @@
     function renderAll_oe(){
       renderSummary_oe(); renderTable_oe(); renderCharts_oe(); renderBlockers_oe();
       if(currentBrand_oe) renderDetails_oe(currentBrand_oe);
+
+      setTimeout(() => alignCardHeights('oe'), 100);
     }
 
     function renderSummary_oe(){
@@ -877,6 +876,25 @@
             tbody.innerHTML+=`<tr><td>${i.date}</td><td>${i.sku}</td><td>${i.asin}</td><td>${i.status}</td><td>${i.issues}</td><td>${i.dateFixed}</td></tr>`;
         });
     }
+    function alignCardHeights(view) {
+      // 1. Get the cards
+      const leftCard = document.getElementById(`leftCard_${view}`);
+      const rightCard = document.getElementById(`rightCard_${view}`);
+      
+      if(!leftCard || !rightCard) return;
+
+      // 2. Reset height to auto first to get natural height if content changed
+      leftCard.style.height = 'auto';
+      
+      // 3. Get the natural height of the "Top Brands" (Right) card
+      const rightHeight = rightCard.offsetHeight;
+      
+      // 4. Force Left card to match Right card (if right card has height)
+      if(rightHeight > 100) { // arbitrary min safety
+          leftCard.style.height = `${rightHeight}px`;
+      }
+  }
+
 
     document.getElementById('brandSearchBox_oe').oninput=renderTable_oe;
     document.getElementById('statusFilter_oe').onchange=()=>{currentPage_oe=1; renderDetails_oe(currentBrand_oe);};
